@@ -15,6 +15,7 @@ class Result:
     nominal_hz: float
     current: np.ndarray
     network_residual: np.ndarray
+    enabled: np.ndarray
 
 def observe(model, time, states):
     points = [model.network(x) for x in states]
@@ -22,7 +23,8 @@ def observe(model, time, states):
     return Result(np.array(time), np.array(states), np.array([p.voltage for p in points]),
                   np.array([p.power for p in points]), frequency,
                   tuple(i.name for i in model.config.inverters), model.config.base.frequency_hz,
-                  np.array([p.current for p in points]), np.array([p.residual for p in points]))
+                  np.array([p.current for p in points]), np.array([p.residual for p in points]),
+                  np.tile(model.enabled, (len(time), 1)))
 
 def simulate(config, duration=10.0, sample_s=.02, initial=None, rtol=1e-7, atol=1e-9,
              method="RK45", max_step=.02):

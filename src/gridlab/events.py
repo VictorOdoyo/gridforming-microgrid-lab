@@ -88,4 +88,5 @@ def run_events(config, events=(), duration=10.0, sample_s=.02, initial=None,
                     for attr in ("time", "state", "voltage", "power", "frequency_hz")),
                   chunks[0].source_names, config.base.frequency_hz,
                   np.concatenate([r.current for r in chunks]),
-                  np.concatenate([r.network_residual for r in chunks]))
+                  np.concatenate([r.network_residual for r in chunks]),
+                  np.concatenate([r.enabled for r in chunks]))
