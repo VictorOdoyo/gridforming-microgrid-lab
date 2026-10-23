@@ -41,6 +41,9 @@ def parser():
     export.add_argument("--output", required=True)
     inspect = sub.add_parser("inspect", help="summarize a saved NumPy trace")
     inspect.add_argument("input")
+    from .lab.cli import add_parser
+
+    add_parser(sub)
     return p
 
 
@@ -48,6 +51,10 @@ def main(argv=None):
     p = parser()
     args = p.parse_args(argv)
     try:
+        if args.command == "lab":
+            from .lab.cli import execute
+
+            return execute(args)
         if args.command == "list":
             for name, factory in sorted(CASES.items()):
                 print(f"{name}: {factory().description}")
