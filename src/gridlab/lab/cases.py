@@ -19,3 +19,18 @@ def dc_step():
 
 
 CASES = {"dc-step": dc_step}
+
+
+def dc_reversal():
+    return LabCase(
+        "dc-reversal",
+        "dc",
+        "DC load reverses from discharge to regenerative charging",
+        DCSystem(),
+        0.4,
+        0.0001,
+        {"demand_w": Signal((0, 0.1), (30000, -30000))},
+    )
+
+
+CASES["dc-reversal"] = dc_reversal
