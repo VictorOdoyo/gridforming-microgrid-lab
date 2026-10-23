@@ -67,6 +67,8 @@ def simulate_hybrid(
         pv = float(solar(t))
         g = float(conductance(t) if load_override is None else load_override)
         ref = complex(reference(t) if ref_override is None else ref_override)
+        if plant.outer is not None:
+            ref *= np.exp(1j * x[9])
         gate = supervisor.step(plant.dc.bus.voltage(x[3]), x[4], dt, reset_gate)
         duty, command, closed = control.step(plant, x, ref, g, dt, gate=gate, reset=reset_battery, pv_w=pv)
         rows.append((x.copy(), duty, command, closed, gate, g, ref, pv))

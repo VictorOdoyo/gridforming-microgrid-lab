@@ -9,6 +9,8 @@ from gridlab.dc.conversion import dc_demand
 from gridlab.dc.system import DCSystem
 from gridlab.modulation import limit_vector
 
+from .grid_forming import GridForming
+
 
 @dataclass(frozen=True)
 class HybridPlant:
@@ -16,13 +18,15 @@ class HybridPlant:
     ac: LCPlant = field(default_factory=LCPlant)
     inverter_resistance_ohm: float = 0.01
     inverter_idle_w: float = 20
+    outer: GridForming | None = None
 
     def __post_init__(self):
         if min(self.inverter_resistance_ohm, self.inverter_idle_w) < 0:
             raise ValueError("nonnegative inverter losses required")
 
     def initial(self, soc=0.5):
-        return np.r_[self.dc.initial(soc), np.zeros(4)]
+        physical = np.r_[self.dc.initial(soc), np.zeros(4)]
+        return physical if self.outer is None else np.r_[physical, np.zeros(4)]
 
     def observe(self, state, duty, command, closed=True, gate=True):
         dc_state, ac_state = state[:5], state[5:9]
@@ -49,10 +53,18 @@ class HybridPlant:
             raise ValueError("nonnegative finite solar power required")
         dc_derivative = self.dc.derivative(time, state[:5], duty, p["inverter_dc_w"], closed)
         dc_derivative[3] += pv_w
-        return np.r_[
+        physical = np.r_[
             dc_derivative,
             self.ac.derivative(state[5:9], p["command"], conductance),
         ]
+
+        if self.outer is None:
+            return physical
+        power = 1.5 * conductance * np.dot(state[7:9], state[7:9])
+        outer = (
+            self.outer.derivative(state[9:13], power, self.ac.omega / (2 * np.pi)) if gate else np.zeros(4)
+        )
+        return np.r_[physical, outer]
 
     def stored_j(self, state):
         return (
