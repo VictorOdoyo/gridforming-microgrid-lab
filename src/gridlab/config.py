@@ -15,7 +15,7 @@ class Inverter:
     droop_hz: float = 1.0
     q_droop: float = .05
     inertia_s: float = 2.0
-    power_tau: float = .05
+    power_tau: float = .02
     voltage_tau: float = .1
     mode: str = "droop"
     rating_pu: float = 1.0
