@@ -62,3 +62,12 @@ def radial_feeder(mode="droop"):
                 c, (Event(2, "load_scale", 1.5, 1),), 8)
 
 CASES["radial-feeder"] = radial_feeder
+
+def overload(mode="droop"):
+    inv = Inverter("limited-bess", 0, impedance=.05+.1j, p_ref=.4, mode=mode,
+                   current_limit_pu=.7)
+    c = Microgrid(1, (), (.4+.1j,), (inv,))
+    return Case("overload", "Large load step drives radial current saturation",
+                c, (Event(2, "load_scale", 4),), 6)
+
+CASES["overload"] = overload
