@@ -62,6 +62,8 @@ def parse_case(data):
     }
     event_cls = DCEvent if kind == "dc" else HybridEvent
     events = tuple(event_cls(**e) for e in d.pop("events", ()))
+    if d.get("initial_state") is not None:
+        d["initial_state"] = tuple(d["initial_state"])
     return LabCase(plant=plant, signals=signals, events=events, **d)
 
 
