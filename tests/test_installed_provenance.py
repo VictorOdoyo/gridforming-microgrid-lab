@@ -12,4 +12,4 @@ def test_installed_package_does_not_discover_a_parent_repository(tmp_path, monke
     record = module.provenance(load_step())
     assert record["git_commit"] is None
     assert record["git_dirty"] is None
-    assert record["package_version"] == "0.1.0"
+    assert record["package_version"] == "0.2.0"
