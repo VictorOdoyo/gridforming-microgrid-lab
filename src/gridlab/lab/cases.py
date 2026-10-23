@@ -182,3 +182,24 @@ def hybrid_cloud():
 
 
 CASES["hybrid-cloud"] = hybrid_cloud
+
+
+def hybrid_low_soc():
+    from dataclasses import replace
+
+    from gridlab.dc.pack import Pack
+
+    base = hybrid_step()
+    dc = replace(base.plant.dc, pack=Pack(capacity_ah=0.5))
+    plant = replace(base.plant, dc=dc)
+    return replace(
+        base,
+        name="hybrid-low-soc",
+        description="Limited SOC reserve removes battery support and AC service",
+        plant=plant,
+        duration=0.7,
+        initial_state=tuple(plant.initial(soc=0.11)),
+    )
+
+
+CASES["hybrid-low-soc"] = hybrid_low_soc
