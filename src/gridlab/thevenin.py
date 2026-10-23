@@ -1,6 +1,8 @@
 """Single-RC terminal model using SI units and zero-order-held current."""
-from dataclasses import dataclass
+
 import math
+from dataclasses import dataclass
+
 
 @dataclass(frozen=True)
 class TheveninCell:
@@ -17,7 +19,7 @@ class TheveninCell:
     def step(self, polarization_v, current_a, soc, dt):
         if dt < 0 or not 0 <= soc <= 1:
             raise ValueError("invalid step or state of charge")
-        decay = math.exp(-dt/(self.r1*self.c1))
-        vp = decay*polarization_v + self.r1*current_a*(1-decay)
-        ocv = self.ocv_empty + soc*(self.ocv_full-self.ocv_empty)
-        return vp, ocv-self.r0*current_a-vp
+        decay = math.exp(-dt / (self.r1 * self.c1))
+        vp = decay * polarization_v + self.r1 * current_a * (1 - decay)
+        ocv = self.ocv_empty + soc * (self.ocv_full - self.ocv_empty)
+        return vp, ocv - self.r0 * current_a - vp

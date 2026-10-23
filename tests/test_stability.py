@@ -1,6 +1,7 @@
 from gridlab.cases import load_step
 from gridlab.stability import stability_report
 
+
 def test_gauge_and_unused_droop_states_are_removed():
     report = stability_report(load_step().config)
     assert 0 not in report["state_indices"]

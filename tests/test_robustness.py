@@ -1,5 +1,6 @@
 from gridlab.robustness import robustness_study
 
+
 def test_seeded_uncertainty_keeps_parameters_and_failure_count():
     report = robustness_study(3, 17)
     assert len(report["trials"]) == 3

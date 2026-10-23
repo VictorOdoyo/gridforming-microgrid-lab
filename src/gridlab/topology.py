@@ -1,4 +1,6 @@
 """Topology diagnostics independent of numerical matrix conditioning."""
+
+
 def islands(nbus, lines):
     neighbors = [set() for _ in range(nbus)]
     for line in lines:
@@ -13,10 +15,11 @@ def islands(nbus, lines):
             if node in component:
                 continue
             component.add(node)
-            stack.extend(neighbors[node]-component)
+            stack.extend(neighbors[node] - component)
         unseen -= component
         result.append(tuple(sorted(component)))
     return result
+
 
 def unpowered_islands(nbus, lines, source_buses):
     sources = set(source_buses)

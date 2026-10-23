@@ -1,6 +1,8 @@
 """Three-phase bases: total VA, line-line RMS volts, and phase-current RMS amps."""
-from dataclasses import dataclass
+
 import math
+from dataclasses import dataclass
+
 
 @dataclass(frozen=True)
 class Base:
@@ -9,8 +11,7 @@ class Base:
     frequency_hz: float = 50.0
 
     def __post_init__(self):
-        if not all(math.isfinite(x) and x > 0 for x in
-                   (self.power_va, self.voltage_ll_v, self.frequency_hz)):
+        if not all(math.isfinite(x) and x > 0 for x in (self.power_va, self.voltage_ll_v, self.frequency_hz)):
             raise ValueError("bases must be finite and positive")
 
     @property

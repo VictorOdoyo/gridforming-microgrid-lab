@@ -1,5 +1,6 @@
 from gridlab.solar import PVArray
 
+
 def test_darkness_and_temperature_derating():
     pv = PVArray(100)
     assert pv.available_kw(0) == 0

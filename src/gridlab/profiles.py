@@ -1,6 +1,9 @@
 """Deterministic profiles evaluated without mutable integration state."""
+
 from dataclasses import dataclass
+
 import numpy as np
+
 
 @dataclass(frozen=True)
 class Profile:
@@ -18,7 +21,8 @@ class Profile:
     def __call__(self, time):
         return np.interp(time, self.times, self.values)
 
+
 def ramp(time, start, duration, initial=0.0, final=1.0):
     if duration <= 0:
         raise ValueError("ramp duration must be positive")
-    return initial + (final-initial)*np.clip((np.asarray(time)-start)/duration, 0, 1)
+    return initial + (final - initial) * np.clip((np.asarray(time) - start) / duration, 0, 1)

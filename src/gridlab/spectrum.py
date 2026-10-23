@@ -1,5 +1,7 @@
 """Standalone waveform analysis; phasor solver output is not a switching waveform."""
+
 import numpy as np
+
 
 def amplitude_spectrum(samples, sample_hz, window="hann"):
     x = np.asarray(samples, float)
@@ -8,19 +10,20 @@ def amplitude_spectrum(samples, sample_hz, window="hann"):
     if window not in ("hann", "rectangular"):
         raise ValueError("unsupported window")
     w = np.hanning(len(x)) if window == "hann" else np.ones(len(x))
-    amplitudes = 2*abs(np.fft.rfft(x*w))/w.sum()
+    amplitudes = 2 * abs(np.fft.rfft(x * w)) / w.sum()
     amplitudes[0] /= 2
     if len(x) % 2 == 0:
         amplitudes[-1] /= 2
-    return np.fft.rfftfreq(len(x), 1/sample_hz), amplitudes
+    return np.fft.rfftfreq(len(x), 1 / sample_hz), amplitudes
+
 
 def coherent_thd(samples, sample_hz, fundamental_hz, highest=40):
-    frequency, amplitude = amplitude_spectrum(samples, sample_hz, "rectangular")
-    bin_hz = sample_hz/len(samples)
-    if fundamental_hz <= 0 or not np.isclose(fundamental_hz/bin_hz, round(fundamental_hz/bin_hz)):
+    _, amplitude = amplitude_spectrum(samples, sample_hz, "rectangular")
+    bin_hz = sample_hz / len(samples)
+    if fundamental_hz <= 0 or not np.isclose(fundamental_hz / bin_hz, round(fundamental_hz / bin_hz)):
         raise ValueError("THD requires an integer number of fundamental cycles")
-    k = int(round(fundamental_hz/bin_hz))
+    k = round(fundamental_hz / bin_hz)
     if k >= len(amplitude) or amplitude[k] <= 1e-12:
         raise ValueError("fundamental missing or above Nyquist")
-    indices = [k*h for h in range(2, highest+1) if k*h < len(amplitude)]
-    return float(np.linalg.norm(amplitude[indices])/amplitude[k])
+    indices = [k * h for h in range(2, highest + 1) if k * h < len(amplitude)]
+    return float(np.linalg.norm(amplitude[indices]) / amplitude[k])

@@ -1,5 +1,7 @@
 import json
+
 from gridlab.cli import main
+
 
 def test_stability_command_emits_operating_point_and_modes(capsys):
     assert main(["stability", "--mode", "vsm"]) == 0

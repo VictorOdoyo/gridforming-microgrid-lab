@@ -1,18 +1,26 @@
 """Portable compressed NumPy archives; loading never enables pickle."""
+
 from pathlib import Path
+
 import numpy as np
+
 from .simulation import Result
 
 _ARRAYS = ("time", "state", "voltage", "power", "frequency_hz", "current", "network_residual", "enabled")
+
 
 def save_result(result, path):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     with path.open("wb") as stream:
-        np.savez_compressed(stream, schema_version=np.array(1),
-                            source_names=np.array(result.source_names),
-                            nominal_hz=np.array(result.nominal_hz),
-                            **{key: getattr(result, key) for key in _ARRAYS})
+        np.savez_compressed(
+            stream,
+            schema_version=np.array(1),
+            source_names=np.array(result.source_names),
+            nominal_hz=np.array(result.nominal_hz),
+            **{key: getattr(result, key) for key in _ARRAYS},
+        )
+
 
 def load_result(path):
     with np.load(path, allow_pickle=False) as archive:

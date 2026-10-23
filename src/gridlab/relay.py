@@ -1,5 +1,7 @@
 """Definite-time protection; pickup must remain active continuously."""
+
 from dataclasses import dataclass
+
 
 @dataclass
 class DefiniteTimeRelay:
@@ -17,8 +19,8 @@ class DefiniteTimeRelay:
         if dt <= 0:
             raise ValueError("dt must be positive")
         pickup = value < self.threshold if self.direction == "below" else value > self.threshold
-        self.elapsed = self.elapsed+dt if pickup else 0.0
-        self.tripped = self.tripped or (pickup and self.elapsed >= self.delay_s-1e-12)
+        self.elapsed = self.elapsed + dt if pickup else 0.0
+        self.tripped = self.tripped or (pickup and self.elapsed >= self.delay_s - 1e-12)
         return self.tripped
 
     def reset(self):

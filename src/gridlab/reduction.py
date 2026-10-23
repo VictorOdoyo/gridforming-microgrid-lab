@@ -1,5 +1,7 @@
 """Schur-complement reduction for zero-current-injection eliminated buses."""
+
 import numpy as np
+
 
 def kron_reduce(ybus, retain):
     y = np.asarray(ybus, dtype=complex)

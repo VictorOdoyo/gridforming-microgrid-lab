@@ -1,6 +1,9 @@
 """Sampled PI regulator with conditional integration at output saturation."""
+
 from dataclasses import dataclass
+
 import numpy as np
+
 
 @dataclass
 class PI:
@@ -17,9 +20,12 @@ class PI:
     def step(self, error, dt, feedforward=0.0):
         if dt <= 0:
             raise ValueError("dt must be positive")
-        candidate = self.integral+self.ki*error*dt
-        raw = self.kp*error+candidate+feedforward
-        if (self.lower <= raw <= self.upper or
-                (raw > self.upper and error < 0) or (raw < self.lower and error > 0)):
+        candidate = self.integral + self.ki * error * dt
+        raw = self.kp * error + candidate + feedforward
+        if (
+            self.lower <= raw <= self.upper
+            or (raw > self.upper and error < 0)
+            or (raw < self.lower and error > 0)
+        ):
             self.integral = candidate
-        return float(np.clip(self.kp*error+self.integral+feedforward, self.lower, self.upper))
+        return float(np.clip(self.kp * error + self.integral + feedforward, self.lower, self.upper))

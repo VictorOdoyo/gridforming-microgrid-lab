@@ -1,6 +1,8 @@
 import numpy as np
+
 from gridlab.cases import load_step
 from gridlab.events import run_events
+
 
 def test_symmetric_inverters_share_the_disturbance_equally():
     case = load_step()

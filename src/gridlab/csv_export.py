@@ -1,7 +1,10 @@
 """Long-form CSV with explicit quantity names and units."""
+
 import csv
 from pathlib import Path
+
 import numpy as np
+
 
 def export_csv(result, path):
     path = Path(path)

@@ -1,6 +1,8 @@
 """Stratified uncertainty sampling and finite-result percentile summaries."""
+
 import numpy as np
 from scipy.stats import qmc
+
 
 def latin_hypercube(bounds, count, seed=42):
     if count <= 0 or not bounds:
@@ -14,6 +16,7 @@ def latin_hypercube(bounds, count, seed=42):
     unit = qmc.LatinHypercube(len(names), seed=seed).random(count)
     values = qmc.scale(unit, limits[:, 0], limits[:, 1])
     return [dict(zip(names, row)) for row in values]
+
 
 def percentiles(values, levels=(5, 50, 95)):
     x = np.asarray(values, float)

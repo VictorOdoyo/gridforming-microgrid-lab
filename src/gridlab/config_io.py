@@ -1,13 +1,16 @@
 """Versioned JSON case interchange; complex numbers are [real, imag] pairs."""
-from dataclasses import asdict
+
 import json
 import tomllib
+from dataclasses import asdict
 from pathlib import Path
+
 from .cases import Case
-from .config import Inverter, Microgrid, GridConnection
+from .config import GridConnection, Inverter, Microgrid
 from .events import Event
 from .network import Line
 from .units import Base
+
 
 def encode(value):
     if isinstance(value, complex):
@@ -20,8 +23,10 @@ def encode(value):
         return None
     return value
 
+
 def case_dict(case):
     return {"schema_version": 1, **encode(asdict(case))}
+
 
 def parse_case(data):
     data = dict(data)
@@ -49,8 +54,10 @@ def parse_case(data):
     events = tuple(Event(**e) for e in data.pop("events", ()))
     return Case(config=Microgrid(**raw), events=events, **data)
 
+
 def save_case(case, path):
-    Path(path).write_text(json.dumps(case_dict(case), indent=2, allow_nan=False)+"\n", encoding="utf-8")
+    Path(path).write_text(json.dumps(case_dict(case), indent=2, allow_nan=False) + "\n", encoding="utf-8")
+
 
 def load_case(path):
     path = Path(path)

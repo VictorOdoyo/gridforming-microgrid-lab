@@ -1,5 +1,7 @@
 """Reduced swing equation: 2H/f0 * df/dt = Pset-P-(df-secondary)/mp."""
+
 from dataclasses import dataclass
+
 
 @dataclass(frozen=True)
 class VSM:
@@ -12,5 +14,5 @@ class VSM:
             raise ValueError("VSM parameters must be positive")
 
     def derivative(self, deviation_hz, power_pu, reference_pu, secondary_hz=0.0):
-        mismatch = reference_pu-power_pu-(deviation_hz-secondary_hz)/self.droop_hz
-        return self.nominal_hz*mismatch/(2*self.inertia_s)
+        mismatch = reference_pu - power_pu - (deviation_hz - secondary_hz) / self.droop_hz
+        return self.nominal_hz * mismatch / (2 * self.inertia_s)
