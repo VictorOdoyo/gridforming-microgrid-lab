@@ -34,3 +34,21 @@ def dc_reversal():
 
 
 CASES["dc-reversal"] = dc_reversal
+
+
+def dc_contactor():
+    from gridlab.dc.events import DCEvent
+
+    return LabCase(
+        "dc-contactor",
+        "dc",
+        "Battery contactor trip and healthy explicit rearm",
+        DCSystem(),
+        0.2,
+        0.0001,
+        {"demand_w": Signal((0,), (50000,))},
+        (DCEvent(0.05, "trip"), DCEvent(0.06, "reset")),
+    )
+
+
+CASES["dc-contactor"] = dc_contactor
