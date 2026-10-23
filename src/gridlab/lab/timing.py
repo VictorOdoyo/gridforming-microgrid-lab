@@ -11,10 +11,10 @@ def retime(case, duration=None, period_s=None):
         raise ValueError("positive duration required")
     signals = {}
     for name, s in case.signals.items():
-        times = [t for t in s.times if t < horizon]
+        times = [t for t in s.times if t <= horizon]
         if not times:
             times = [0.0]
-        if horizon < s.times[-1]:
+        if horizon < s.times[-1] and times[-1] != horizon:
             times.append(horizon)
         signals[name] = Signal(tuple(times), tuple(float(s(t)) for t in times), s.interpolation)
     return replace(
