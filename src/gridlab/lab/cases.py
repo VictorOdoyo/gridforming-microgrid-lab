@@ -126,3 +126,21 @@ def hybrid_step(mode="vsm"):
 
 
 CASES["hybrid-step"] = hybrid_step
+
+
+def hybrid_outage():
+    from dataclasses import replace
+
+    from gridlab.hybrid.events import HybridEvent
+
+    base = hybrid_step()
+    return replace(
+        base,
+        name="hybrid-outage",
+        description="Battery trip drains DC hold-up before protected AC isolation",
+        duration=0.5,
+        events=(HybridEvent(0.1, "battery-trip"),),
+    )
+
+
+CASES["hybrid-outage"] = hybrid_outage
