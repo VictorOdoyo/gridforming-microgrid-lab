@@ -4,6 +4,7 @@ import numpy as np
 from scipy.integrate import solve_ivp
 from .dynamics import Dynamics
 from .simulation import Result, observe
+from .synchronization import SyncCheck
 
 @dataclass(frozen=True)
 class Event:
@@ -47,6 +48,17 @@ def run_events(config, events=(), duration=10.0, sample_s=.02, initial=None,
                 elif event.kind == "source_enabled":
                     enabled[event.target] = bool(event.value)
                 elif event.kind == "grid_enabled":
+                    if event.value and not grid_on:
+                        candidate = Dynamics(replace(config, loads=tuple(np.asarray(config.loads)*scales),
+                                                     inverters=tuple(replace(inv, p_ref=refs[k])
+                                                                     for k, inv in enumerate(config.inverters)),
+                                                     lines=tuple(replace(line, enabled=line_on[k])
+                                                                 for k, line in enumerate(config.lines))),
+                                             enabled=enabled, grid_connected=False)
+                        local = candidate.network(x).voltage[config.grid.bus]
+                        freq = config.base.frequency_hz+np.mean(candidate.frequencies(x)[enabled])
+                        if not SyncCheck().accepts(local, config.grid.voltage, freq, config.base.frequency_hz):
+                            raise RuntimeError(f"unsafe synchronization at t={time:g}s")
                     grid_on = bool(event.value)
                 elif event.kind == "line_enabled":
                     line_on[event.target] = bool(event.value)
