@@ -44,6 +44,8 @@ def simulate_dc(
     x = system.initial() if initial is None else np.array(initial, float)
     if x.shape != (5,) or not np.isfinite(x).all():
         raise ValueError("invalid DC initial state")
+    if x[3] <= 0:
+        raise ValueError("positive initial DC energy required; initialize with analytical precharge")
     states, duties, references, statuses, loads, saved_times = [], [], [], [], [], []
     precharge_states = []
     termination = "completed"

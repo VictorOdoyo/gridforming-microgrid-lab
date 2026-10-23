@@ -46,6 +46,7 @@ def plot_case(case, trace, path):
         axes[3].legend(fontsize=8)
         axes[4].plot(t, trace.gate.astype(int), label="AC gate")
         axes[4].plot(t, trace.closed.astype(int), ls="--", label="battery contactor")
+        axes[4].plot(t, trace.precharge.astype(int), ls=":", label="precharge")
         axes[4].set_ylabel("Enabled")
         axes[4].legend(fontsize=8)
     for ax in axes:

@@ -55,3 +55,16 @@ as a frequency spike and requires separate interpretation.
 
 CT/PT saturation, relay communication, breaker travel time, negative sequence,
 ground faults and device-specific ride-through are outside these supervisors.
+
+
+## Rearm inrush interlock
+
+A main-contact reset request remains pending while DC voltage is below the
+precharge closing threshold. A modeled resistor path supplies limited capacitor
+charging current, then the main converter resumes DC regulation. AC gating still
+waits for its separate healthy-voltage dwell. Electrical audits include precharge
+resistor losses and battery current.
+
+Earlier trial recovery traces exposed a large boost-stage inrush when the battery
+was directly reconnected to a link below pack voltage. The precharge regression
+retains an explicit peak-current acceptance check alongside energy closure.

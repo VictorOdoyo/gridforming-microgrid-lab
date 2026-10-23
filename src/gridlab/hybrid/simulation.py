@@ -54,6 +54,8 @@ def simulate_hybrid(
     x = plant.initial() if initial is None else np.array(initial, float)
     if x.shape != (len(plant.initial()),) or not np.isfinite(x).all():
         raise ValueError("invalid physical initial state")
+    if x[3] <= 0:
+        raise ValueError("positive initial DC energy required; initialize with analytical precharge")
     rows = []
     plant_rates = {}
     for k, t in enumerate(time):

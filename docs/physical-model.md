@@ -103,3 +103,17 @@ There are no switching-device transients, validated cell-aging laws, electrochem
 diffusion PDEs or certified relay models. Carrier/PWM and dead-time utilities are
 separate waveform experiments. Parameters are illustrative rather than identified
 from a commercial inverter or cell pack.
+
+
+## Precharge during recovery
+
+If a healthy battery is rearmed while the link is below 98% of its terminal
+open-circuit voltage, its main contactor remains open. A passive resistor path
+charges the capacitor first. This avoids demanding boost-current regulation when
+DC link voltage is below battery voltage. Precharge current contributes to SOC,
+polarization, electrical losses and heat; it is not free energy.
+
+The precharge flag is recorded separately from the main contactor. The default
+2 ohm resistor and 98% closing fraction are illustrative experiment settings.
+The energy-state integrator requires positive initial link energy. Use the
+analytical Precharge model to initialize an exactly dead capacitor.

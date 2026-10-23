@@ -22,7 +22,18 @@ def summarize(case, trace):
             final_dc_v=float(voltage[-1]),
             initial_soc=float(trace.state[0, 0]),
             final_soc=float(trace.state[-1, 0]),
-            maximum_battery_a=float(abs(trace.state[:, 2]).max()),
+            maximum_dc_inductor_a=float(abs(trace.state[:, 2]).max()),
+            maximum_battery_a=float(
+                max(
+                    abs(
+                        system.observe(s, trace.duty[k], bool(trace.closed[k]), bool(trace.precharge[k]))[
+                            "battery_current_a"
+                        ]
+                    )
+                    for k, s in enumerate(trace.state)
+                )
+            ),
+            precharge_samples=int(trace.precharge.sum()),
             maximum_pack_temperature_c=float(trace.state[:, 4].max()),
         )
     if case.kind == "dc":
