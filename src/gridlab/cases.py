@@ -52,3 +52,13 @@ def island_recovery(mode="vsm"):
                 c, (Event(2, "source_enabled", 0, 1), Event(16, "grid_enabled", 1)), 20)
 
 CASES["island-recovery"] = island_recovery
+
+def radial_feeder(mode="droop"):
+    sources = (Inverter("large-bess", 0, p_ref=.4, droop_hz=.75, rating_pu=2, mode=mode),
+               Inverter("small-bess", 2, p_ref=.2, droop_hz=1.5, rating_pu=1, mode=mode))
+    c = Microgrid(3, (Line(0, 1, .015, .08), Line(1, 2, .02, .1)),
+                  (.1+.02j, .5+.15j, .2+.05j), sources)
+    return Case("radial-feeder", "Three buses with unequal source ratings and a remote load step",
+                c, (Event(2, "load_scale", 1.5, 1),), 8)
+
+CASES["radial-feeder"] = radial_feeder
