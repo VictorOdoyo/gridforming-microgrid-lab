@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from gridlab.converter.state_space import lc_state_space
-from gridlab.numerics import rk4_substeps, ticks
+from gridlab.numerics import merge_boundaries, rk4_substeps, ticks
 from gridlab.protection.gate import GateSupervisor
 
 from .control import HybridControl
@@ -37,13 +37,14 @@ def simulate_hybrid(
     supervisor=None,
     solar=None,
     shedding=None,
+    boundaries=(),
 ):
     plant = plant or HybridPlant()
     control = control or HybridControl.tuned(plant)
     reference = reference or (lambda t: 325 * min(1, t / 0.02))
     conductance = conductance or (lambda t: 0.1 if t < 0.1 else 0.2)
     solar = solar or (lambda t: 0.0)
-    time = ticks(duration, period_s)
+    time = merge_boundaries(ticks(duration, period_s), boundaries)
     if any(e.time > duration for e in events):
         raise ValueError("hybrid event outside horizon")
     time = np.unique(np.r_[time, [e.time for e in events]])

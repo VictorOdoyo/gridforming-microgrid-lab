@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from gridlab.numerics import rk4, ticks
+from gridlab.numerics import merge_boundaries, rk4, ticks
 
 from .control import DCControl
 from .system import DCSystem
@@ -22,12 +22,19 @@ class DCTrace:
 
 
 def simulate_dc(
-    system=None, demand=None, duration=0.5, period_s=0.0001, initial=None, control=None, events=()
+    system=None,
+    demand=None,
+    duration=0.5,
+    period_s=0.0001,
+    initial=None,
+    control=None,
+    events=(),
+    boundaries=(),
 ):
     system = system or DCSystem()
     control = control or DCControl()
     demand = demand or (lambda t: 50000.0)
-    time = ticks(duration, period_s)
+    time = merge_boundaries(ticks(duration, period_s), boundaries)
     if any(e.time > duration for e in events):
         raise ValueError("DC event outside simulation horizon")
     time = np.unique(np.r_[time, [e.time for e in events]])

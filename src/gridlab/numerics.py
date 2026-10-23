@@ -27,3 +27,10 @@ def rk4_substeps(function, time, state, step, count):
     for k in range(count):
         x = rk4(function, time + k * step / count, x, step / count)
     return x
+
+
+def merge_boundaries(time, boundaries):
+    t = np.asarray(boundaries, float)
+    if t.ndim != 1 or not np.all(np.isfinite(t)) or np.any(t < time[0]) or np.any(t > time[-1]):
+        raise ValueError("finite boundaries inside the simulation horizon required")
+    return np.unique(np.r_[time, t])

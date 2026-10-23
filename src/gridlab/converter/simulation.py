@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from gridlab.numerics import rk4, ticks
+from gridlab.numerics import merge_boundaries, rk4, ticks
 
 from .control import Cascade
 from .lc import LCPlant
@@ -31,13 +31,14 @@ def simulate_converter(
     control=None,
     measurement=None,
     actuation_delay=None,
+    boundaries=(),
 ):
     plant = plant or LCPlant()
     control = control or Cascade.tuned(plant)
     reference = reference or (lambda t: 325 * min(1, t / 0.02))
     conductance = conductance or (lambda t: 0.1 if t < 0.08 else 0.2)
     dc_voltage = dc_voltage or (lambda t: 700.0)
-    time = ticks(duration, period_s)
+    time = merge_boundaries(ticks(duration, period_s), boundaries)
     x = np.zeros(4) if initial is None else np.array(initial, float)
     states, commands, refs, loads, links = [], [], [], [], []
     for k, t in enumerate(time):
