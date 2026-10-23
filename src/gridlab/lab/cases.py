@@ -52,3 +52,18 @@ def dc_contactor():
 
 
 CASES["dc-contactor"] = dc_contactor
+
+
+def dc_hot_pack():
+    return LabCase(
+        "dc-hot-pack",
+        "dc",
+        "Thermal current derating limits support from a hot battery",
+        DCSystem(ambient_c=55),
+        0.25,
+        0.0001,
+        {"demand_w": Signal((0,), (60000,))},
+    )
+
+
+CASES["dc-hot-pack"] = dc_hot_pack
