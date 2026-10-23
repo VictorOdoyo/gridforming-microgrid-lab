@@ -1,6 +1,7 @@
 """CLI for coupled physical laboratory experiments."""
 
 import json
+from dataclasses import replace
 from pathlib import Path
 
 from .case import run_case
@@ -17,6 +18,7 @@ def add_parser(sub):
     source = run.add_mutually_exclusive_group()
     source.add_argument("--case", choices=sorted(CASES), default=None)
     source.add_argument("--config")
+    run.add_argument("--mode", choices=("droop", "vsm"))
     run.add_argument("--duration", type=float)
     run.add_argument("--period", type=float)
     run.add_argument("--output", default="outputs/lab")
@@ -75,6 +77,10 @@ def execute(args):
         print(json.dumps(summarize(case, trace), indent=2, allow_nan=False))
         return 0
     case = load_case(args.config) if args.config else CASES[args.case or "hybrid-step"]()
+    if args.mode:
+        if case.kind != "hybrid" or case.plant.outer is None:
+            raise ValueError("mode override requires a hybrid grid-forming case")
+        case = replace(case, plant=replace(case.plant, outer=replace(case.plant.outer, mode=args.mode)))
     case = retime(case, args.duration, args.period)
     trace = run_case(case)
     from .report import write_report
