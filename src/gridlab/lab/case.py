@@ -30,6 +30,22 @@ class LabCase:
             raise ValueError("named case and positive finite timing required")
         if self.duration / self.period_s > 2_000_000:
             raise ValueError("case exceeds two million control intervals")
+        allowed = {
+            "dc": {"demand_w"},
+            "converter": {"reference_v", "conductance", "dc_voltage_v"},
+            "hybrid": {"reference_v", "conductance", "solar_w"},
+        }
+        if set(self.signals) - allowed[self.kind]:
+            raise ValueError("unknown signal for selected laboratory kind")
+        if self.kind == "converter" and self.events:
+            raise ValueError("converter cases use signals instead of supervisor events")
+        if any(e.time > self.duration for e in self.events):
+            raise ValueError("event outside case duration")
+        for name, signal in self.signals.items():
+            if name != "demand_w" and min(signal.values) < 0:
+                raise ValueError("negative physical signal not supported")
+            if name == "dc_voltage_v" and min(signal.values) <= 0:
+                raise ValueError("converter DC supply must remain positive")
         if any(s.times[-1] > self.duration for s in self.signals.values()):
             raise ValueError("signal extends beyond case duration")
 
