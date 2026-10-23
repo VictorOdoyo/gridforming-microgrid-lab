@@ -52,10 +52,14 @@ def execute(args):
             "observer": observer_study,
             "active-damping": damping_study,
         }
+        from .study_spec import specification, specification_dict
+
+        spec = specification(args.kind)
         record = {
+            "configuration": specification_dict(spec),
             "study": args.kind,
             "results": functions[args.kind](),
-            "provenance": provenance(CASES["hybrid-step"]()),
+            "provenance": provenance(spec),
         }
         target = Path(args.output)
         target.parent.mkdir(parents=True, exist_ok=True)
