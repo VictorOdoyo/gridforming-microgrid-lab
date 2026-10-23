@@ -144,3 +144,21 @@ def hybrid_outage():
 
 
 CASES["hybrid-outage"] = hybrid_outage
+
+
+def hybrid_restart():
+    from dataclasses import replace
+
+    from gridlab.hybrid.events import HybridEvent
+
+    base = hybrid_outage()
+    return replace(
+        base,
+        name="hybrid-restart",
+        description="Battery rearm recharges DC link before guarded AC restart",
+        duration=0.9,
+        events=(*base.events, HybridEvent(0.4, "battery-reset"), HybridEvent(0.4, "gate-reset")),
+    )
+
+
+CASES["hybrid-restart"] = hybrid_restart
