@@ -16,7 +16,9 @@ class Dynamics:
         self.buses = [i.bus for i in config.inverters]
         self.impedances = [i.impedance for i in config.inverters]
 
-    def initial(self, voltage=1.0):
+    def initial(self, voltage=None):
+        if voltage is None:
+            voltage = 0.0 if self.config.startup_s > 0 else 1.0
         state = np.zeros(5*self.n+1)
         state[:-1].reshape(self.n, 5)[:, 2] = voltage
         point = self.network(state)
@@ -59,7 +61,8 @@ class Dynamics:
             if inv.mode == "vsm":
                 dx[k, 1] = self.config.base.frequency_hz/(2*inv.inertia_s)*(
                     inv.p_ref-x[k, 3]-(df[k]-state[-1]-self.synchronization_bias(state))/inv.droop_hz)
-            target = inv.v_ref-inv.q_droop*(x[k, 4]-inv.q_ref)
+            startup = min(1.0, max(0.0, time/self.config.startup_s)) if self.config.startup_s else 1.0
+            target = startup*(inv.v_ref-inv.q_droop*(x[k, 4]-inv.q_ref))
             dx[k, 2] = (target-x[k, 2])/inv.voltage_tau
             dx[k, 3] = (point.power[k].real-x[k, 3])/inv.power_tau
             dx[k, 4] = (point.power[k].imag-x[k, 4])/inv.power_tau
