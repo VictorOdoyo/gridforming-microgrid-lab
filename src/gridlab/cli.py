@@ -25,6 +25,11 @@ def parser():
     compare = sub.add_parser("compare", help="compare droop and VSM under the same load step")
     compare.add_argument("--duration", type=float, default=8)
     compare.add_argument("--output", default="outputs/comparison")
+    study = sub.add_parser("study", help="run an engineering parameter or energy study")
+    study.add_argument("kind", choices=("weak-grid", "stability-map", "daily-energy", "convergence", "robustness"))
+    study.add_argument("--output", default="outputs/study.json")
+    study.add_argument("--count", type=int, default=12, help="uncertainty trial count")
+    study.add_argument("--seed", type=int, default=42)
     return p
 
 def main(argv=None):
@@ -34,6 +39,28 @@ def main(argv=None):
         if args.command == "list":
             for name, factory in sorted(CASES.items()):
                 print(f"{name}: {factory().description}")
+            return 0
+        if args.command == "study":
+            from pathlib import Path
+            from dataclasses import asdict, is_dataclass
+            from .weak_grid import weak_grid_study
+            from .stability_sweep import stability_sweep
+            from .daily_energy import daily_energy
+            from .integration_study import integration_study
+            from .robustness import robustness_study
+            functions = {"weak-grid": weak_grid_study, "stability-map": stability_sweep,
+                         "daily-energy": daily_energy, "convergence": integration_study,
+                         "robustness": lambda: robustness_study(args.count, args.seed)}
+            value = functions[args.kind]()
+            def serialize(obj):
+                if is_dataclass(obj):
+                    return asdict(obj)
+                raise TypeError(f"unsupported study value: {type(obj).__name__}")
+            content = json.dumps(value, indent=2, default=serialize, allow_nan=False)
+            path = Path(args.output)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(content+"\n", encoding="utf-8")
+            print(json.dumps({"study": args.kind, "output": str(path)}))
             return 0
         if args.command == "compare":
             from pathlib import Path
