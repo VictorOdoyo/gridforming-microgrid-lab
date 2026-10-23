@@ -1,0 +1,583 @@
+{
+  "dc-step": {
+    "case": {
+      "schema_version": 1,
+      "name": "dc-step",
+      "kind": "dc",
+      "description": "Battery DC/DC voltage recovery after a 30 to 60 kW step",
+      "plant": {
+        "pack": {
+          "capacity_ah": 200,
+          "soc_points": [
+            0,
+            0.1,
+            0.5,
+            0.9,
+            1
+          ],
+          "ocv_volts": [
+            500,
+            560,
+            620,
+            665,
+            680
+          ],
+          "resistance_ohm": 0.08,
+          "resistance_temp_coefficient": -0.005
+        },
+        "polarization": {
+          "resistance_ohm": 0.03,
+          "capacitance_f": 1000
+        },
+        "converter": {
+          "inductance_h": 0.005,
+          "resistance_ohm": 0.05
+        },
+        "bus": {
+          "capacitance_f": 0.05,
+          "nominal_v": 700,
+          "minimum_v": 450
+        },
+        "ambient_c": 25,
+        "thermal_resistance_k_w": 0.02,
+        "thermal_capacity_j_k": 10000,
+        "dump_resistance_ohm": 1.0,
+        "precharge_resistance_ohm": 2.0
+      },
+      "duration": 0.5,
+      "period_s": 0.0001,
+      "signals": {
+        "demand_w": {
+          "times": [
+            0,
+            0.1
+          ],
+          "values": [
+            30000,
+            60000
+          ],
+          "interpolation": "step"
+        }
+      },
+      "events": [],
+      "initial_state": null
+    },
+    "metrics": {
+      "kind": "dc",
+      "duration_s": 0.5,
+      "samples": 5001,
+      "requested_period_s": 0.0001,
+      "minimum_dc_v": 696.761818090841,
+      "maximum_dc_v": 701.1406673698258,
+      "final_dc_v": 699.9631931630856,
+      "initial_soc": 0.5,
+      "final_soc": 0.4999382494255864,
+      "maximum_dc_inductor_a": 107.92168992773247,
+      "maximum_battery_a": 107.92168992773247,
+      "precharge_samples": 0,
+      "maximum_pack_temperature_c": 25.054055015602646,
+      "termination": "completed",
+      "energy": {
+        "chemical_draw_j": 27565.25050905347,
+        "delivered_j": 26999.999999999967,
+        "heat_j": 541.1323350038771,
+        "stored_delta_j": 24.118275699187507,
+        "residual_j": -0.0001016495631347425,
+        "relative_residual": 3.6875980177055505e-09,
+        "thermal_residual_j": 0.00010169471886456449
+      }
+    },
+    "provenance": {
+      "created_utc": "2026-10-23T14:07:27.229674+00:00",
+      "python": "3.13.15",
+      "package_version": "0.2.0",
+      "dependencies": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "matplotlib": "3.11.2"
+      },
+      "configuration_sha256": "b01f4654e2cfbe78289ecc40f6c7c3222e51aa8ecb6f0d2297141b777bf4050a",
+      "git_commit": "b183ed962853695f0a5222a7d93c7fe2a55592e0",
+      "git_dirty": true
+    }
+  },
+  "hybrid-restart": {
+    "case": {
+      "schema_version": 1,
+      "name": "hybrid-restart",
+      "kind": "hybrid",
+      "description": "Battery rearm recharges DC link before guarded AC restart",
+      "plant": {
+        "dc": {
+          "pack": {
+            "capacity_ah": 200,
+            "soc_points": [
+              0,
+              0.1,
+              0.5,
+              0.9,
+              1
+            ],
+            "ocv_volts": [
+              500,
+              560,
+              620,
+              665,
+              680
+            ],
+            "resistance_ohm": 0.08,
+            "resistance_temp_coefficient": -0.005
+          },
+          "polarization": {
+            "resistance_ohm": 0.03,
+            "capacitance_f": 1000
+          },
+          "converter": {
+            "inductance_h": 0.005,
+            "resistance_ohm": 0.05
+          },
+          "bus": {
+            "capacitance_f": 0.05,
+            "nominal_v": 700,
+            "minimum_v": 450
+          },
+          "ambient_c": 25,
+          "thermal_resistance_k_w": 0.02,
+          "thermal_capacity_j_k": 10000,
+          "dump_resistance_ohm": 1.0,
+          "precharge_resistance_ohm": 2.0
+        },
+        "ac": {
+          "inductance_h": 0.002,
+          "capacitance_f": 5e-05,
+          "resistance_ohm": 0.1,
+          "omega": 314.1592653589793
+        },
+        "inverter_resistance_ohm": 0.01,
+        "inverter_idle_w": 20,
+        "outer": {
+          "mode": "vsm",
+          "power_base_w": 100000,
+          "reference_pu": 0.3,
+          "droop_hz": 1,
+          "inertia_s": 2,
+          "power_tau_s": 0.02,
+          "secondary_gain": 0
+        }
+      },
+      "duration": 0.9,
+      "period_s": 0.0001,
+      "signals": {
+        "reference_v": {
+          "times": [
+            0,
+            0.02
+          ],
+          "values": [
+            0,
+            325
+          ],
+          "interpolation": "linear"
+        },
+        "conductance": {
+          "times": [
+            0,
+            0.1
+          ],
+          "values": [
+            0.1,
+            0.2
+          ],
+          "interpolation": "step"
+        }
+      },
+      "events": [
+        {
+          "time": 0.1,
+          "kind": "battery-trip",
+          "value": 0.0
+        },
+        {
+          "time": 0.4,
+          "kind": "battery-reset",
+          "value": 0.0
+        },
+        {
+          "time": 0.4,
+          "kind": "gate-reset",
+          "value": 0.0
+        }
+      ],
+      "initial_state": null
+    },
+    "metrics": {
+      "kind": "hybrid",
+      "duration_s": 0.9,
+      "samples": 9001,
+      "requested_period_s": 0.0001,
+      "minimum_dc_v": 449.9870509020072,
+      "maximum_dc_v": 716.4130570277528,
+      "final_dc_v": 703.4772956132452,
+      "initial_soc": 0.5,
+      "final_soc": 0.49996141591036736,
+      "maximum_dc_inductor_a": 166.45444076792216,
+      "maximum_battery_a": 166.45444076792216,
+      "precharge_samples": 2723,
+      "maximum_pack_temperature_c": 25.094654444420783,
+      "final_ac_ll_rms_v": 398.1002063651332,
+      "final_tracking_error_peak_v": 0.047459025093750266,
+      "maximum_phase_rms_a": 57.39552790390548,
+      "gate_blocked_samples": 3537,
+      "energy": {
+        "chemical_draw_j": 17223.857220441103,
+        "solar_input_j": 0.0,
+        "served_load_j": 15791.08154413219,
+        "loss_j": 1293.8744048824685,
+        "stored_delta_j": 139.00870584906625,
+        "residual_j": -0.1074344226217363,
+        "relative_residual": 6.237535602317592e-06
+      },
+      "nadir_internal_hz": 49.94253815795362,
+      "final_internal_hz": 49.96556489933555
+    },
+    "provenance": {
+      "created_utc": "2026-10-23T14:07:49.745337+00:00",
+      "python": "3.13.15",
+      "package_version": "0.2.0",
+      "dependencies": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "matplotlib": "3.11.2"
+      },
+      "configuration_sha256": "3cfe3e670907a4af653c2808f0a361c92b11c8e229cba37e0397e8d227d6ecf5",
+      "git_commit": "b183ed962853695f0a5222a7d93c7fe2a55592e0",
+      "git_dirty": true
+    }
+  },
+  "hybrid-cloud": {
+    "case": {
+      "schema_version": 1,
+      "name": "hybrid-cloud",
+      "kind": "hybrid",
+      "description": "Solar surplus charges storage before a cloud removes DC injection",
+      "plant": {
+        "dc": {
+          "pack": {
+            "capacity_ah": 200,
+            "soc_points": [
+              0,
+              0.1,
+              0.5,
+              0.9,
+              1
+            ],
+            "ocv_volts": [
+              500,
+              560,
+              620,
+              665,
+              680
+            ],
+            "resistance_ohm": 0.08,
+            "resistance_temp_coefficient": -0.005
+          },
+          "polarization": {
+            "resistance_ohm": 0.03,
+            "capacitance_f": 1000
+          },
+          "converter": {
+            "inductance_h": 0.005,
+            "resistance_ohm": 0.05
+          },
+          "bus": {
+            "capacitance_f": 0.05,
+            "nominal_v": 700,
+            "minimum_v": 450
+          },
+          "ambient_c": 25,
+          "thermal_resistance_k_w": 0.02,
+          "thermal_capacity_j_k": 10000,
+          "dump_resistance_ohm": 1.0,
+          "precharge_resistance_ohm": 2.0
+        },
+        "ac": {
+          "inductance_h": 0.002,
+          "capacitance_f": 5e-05,
+          "resistance_ohm": 0.1,
+          "omega": 314.1592653589793
+        },
+        "inverter_resistance_ohm": 0.01,
+        "inverter_idle_w": 20,
+        "outer": {
+          "mode": "vsm",
+          "power_base_w": 100000,
+          "reference_pu": 0.3,
+          "droop_hz": 1,
+          "inertia_s": 2,
+          "power_tau_s": 0.02,
+          "secondary_gain": 0
+        }
+      },
+      "duration": 0.4,
+      "period_s": 0.0001,
+      "signals": {
+        "reference_v": {
+          "times": [
+            0,
+            0.02
+          ],
+          "values": [
+            0,
+            325
+          ],
+          "interpolation": "linear"
+        },
+        "conductance": {
+          "times": [
+            0
+          ],
+          "values": [
+            0.1
+          ],
+          "interpolation": "step"
+        },
+        "solar_w": {
+          "times": [
+            0,
+            0.06,
+            0.2
+          ],
+          "values": [
+            0,
+            30000,
+            0
+          ],
+          "interpolation": "step"
+        }
+      },
+      "events": [],
+      "initial_state": null
+    },
+    "metrics": {
+      "kind": "hybrid",
+      "duration_s": 0.4,
+      "samples": 4002,
+      "requested_period_s": 0.0001,
+      "minimum_dc_v": 696.7750900024423,
+      "maximum_dc_v": 703.6657407987652,
+      "final_dc_v": 699.9467299772333,
+      "initial_soc": 0.5,
+      "final_soc": 0.4999953812145605,
+      "maximum_dc_inductor_a": 35.23934812032803,
+      "maximum_battery_a": 35.23934812032803,
+      "precharge_samples": 0,
+      "maximum_pack_temperature_c": 25.003353256098503,
+      "final_ac_ll_rms_v": 398.0462465156422,
+      "final_tracking_error_peak_v": 0.003399344978533892,
+      "maximum_phase_rms_a": 25.639886355713568,
+      "gate_blocked_samples": 0,
+      "energy": {
+        "chemical_draw_j": 2061.824668198824,
+        "solar_input_j": 4199.999999999998,
+        "served_load_j": 6145.489625883042,
+        "loss_j": 110.93124485596988,
+        "stored_delta_j": 5.40325579207456,
+        "residual_j": 0.0005416677358880406,
+        "relative_residual": 8.814069648847689e-08
+      },
+      "nadir_internal_hz": 50.0,
+      "final_internal_hz": 50.141192219451476
+    },
+    "provenance": {
+      "created_utc": "2026-10-23T14:08:01.994825+00:00",
+      "python": "3.13.15",
+      "package_version": "0.2.0",
+      "dependencies": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "matplotlib": "3.11.2"
+      },
+      "configuration_sha256": "d53dda6047fb02d4949b0d6f163c657a4c4237ef5924af8c6b8a7ee8cad19039",
+      "git_commit": "b183ed962853695f0a5222a7d93c7fe2a55592e0",
+      "git_dirty": true
+    }
+  },
+  "sample-delay": [
+    {
+      "period_s": 2.5e-05,
+      "delay_samples": 0,
+      "delay_s": 0.0,
+      "spectral_radius": 0.9987507781402468,
+      "stable": true
+    },
+    {
+      "period_s": 2.5e-05,
+      "delay_samples": 1,
+      "delay_s": 2.5e-05,
+      "spectral_radius": 0.9987523087443304,
+      "stable": true
+    },
+    {
+      "period_s": 2.5e-05,
+      "delay_samples": 2,
+      "delay_s": 5e-05,
+      "spectral_radius": 0.9987538256783769,
+      "stable": true
+    },
+    {
+      "period_s": 2.5e-05,
+      "delay_samples": 3,
+      "delay_s": 7.500000000000001e-05,
+      "spectral_radius": 0.9987553291539906,
+      "stable": true
+    },
+    {
+      "period_s": 5e-05,
+      "delay_samples": 0,
+      "delay_s": 0.0,
+      "spectral_radius": 0.997503107603277,
+      "stable": true
+    },
+    {
+      "period_s": 5e-05,
+      "delay_samples": 1,
+      "delay_s": 5e-05,
+      "spectral_radius": 0.9975091790512156,
+      "stable": true
+    },
+    {
+      "period_s": 5e-05,
+      "delay_samples": 2,
+      "delay_s": 0.0001,
+      "spectral_radius": 0.9975151435846572,
+      "stable": true
+    },
+    {
+      "period_s": 5e-05,
+      "delay_samples": 3,
+      "delay_s": 0.00015000000000000001,
+      "spectral_radius": 0.9975210047842248,
+      "stable": true
+    },
+    {
+      "period_s": 0.0001,
+      "delay_samples": 0,
+      "delay_s": 0.0,
+      "spectral_radius": 0.9950123923089494,
+      "stable": true
+    },
+    {
+      "period_s": 0.0001,
+      "delay_samples": 1,
+      "delay_s": 0.0001,
+      "spectral_radius": 0.9950362820346256,
+      "stable": true
+    },
+    {
+      "period_s": 0.0001,
+      "delay_samples": 2,
+      "delay_s": 0.0002,
+      "spectral_radius": 0.9972351119675249,
+      "stable": true
+    },
+    {
+      "period_s": 0.0001,
+      "delay_samples": 3,
+      "delay_s": 0.00030000000000000003,
+      "spectral_radius": 1.061398388038739,
+      "stable": false
+    },
+    {
+      "period_s": 0.0002,
+      "delay_samples": 0,
+      "delay_s": 0.0,
+      "spectral_radius": 0.9900493012527409,
+      "stable": true
+    },
+    {
+      "period_s": 0.0002,
+      "delay_samples": 1,
+      "delay_s": 0.0002,
+      "spectral_radius": 1.0940061423808438,
+      "stable": false
+    },
+    {
+      "period_s": 0.0002,
+      "delay_samples": 2,
+      "delay_s": 0.0004,
+      "spectral_radius": 1.181831112943892,
+      "stable": false
+    },
+    {
+      "period_s": 0.0002,
+      "delay_samples": 3,
+      "delay_s": 0.0006000000000000001,
+      "spectral_radius": 1.1794209377133613,
+      "stable": false
+    },
+    {
+      "period_s": 0.0005,
+      "delay_samples": 0,
+      "delay_s": 0.0,
+      "spectral_radius": 1.4639733353762014,
+      "stable": false
+    },
+    {
+      "period_s": 0.0005,
+      "delay_samples": 1,
+      "delay_s": 0.0005,
+      "spectral_radius": 1.3840342741625031,
+      "stable": false
+    },
+    {
+      "period_s": 0.0005,
+      "delay_samples": 2,
+      "delay_s": 0.001,
+      "spectral_radius": 1.2482336278193318,
+      "stable": false
+    },
+    {
+      "period_s": 0.0005,
+      "delay_samples": 3,
+      "delay_s": 0.0015,
+      "spectral_radius": 1.1737310533650822,
+      "stable": false
+    }
+  ],
+  "dc-convergence": [
+    {
+      "integration_substeps": 1,
+      "control_period_s": 0.0001,
+      "maximum_soc_error": 1.609823385706477e-15,
+      "maximum_inductor_error_a": 3.1941738143359544e-10,
+      "maximum_capacitor_energy_error_j": 4.132743924856186e-09,
+      "relative_energy_residual": 3.553232029432338e-08
+    },
+    {
+      "integration_substeps": 2,
+      "control_period_s": 0.0001,
+      "maximum_soc_error": 1.6653345369377348e-15,
+      "maximum_inductor_error_a": 1.901412360894028e-11,
+      "maximum_capacitor_energy_error_j": 2.455635694786906e-10,
+      "relative_energy_residual": 3.560494997737259e-08
+    },
+    {
+      "integration_substeps": 4,
+      "control_period_s": 0.0001,
+      "maximum_soc_error": 1.942890293094024e-15,
+      "maximum_inductor_error_a": 1.6342482922482304e-12,
+      "maximum_capacitor_energy_error_j": 4.729372449219227e-11,
+      "relative_energy_residual": 3.5604981320776225e-08
+    }
+  ],
+  "observer": {
+    "seed": 42,
+    "noise_std_v": 1,
+    "steps": 1000,
+    "current_d_rms_error_a": 0.0006490185864702888,
+    "current_q_rms_error_a": 0.000548168172061,
+    "voltage_d_rms_error_v": 0.005645338446237948,
+    "voltage_q_rms_error_v": 0.0047783352736828115,
+    "minimum_covariance_eigenvalue": 5.4697927130086985e-05
+  }
+}
