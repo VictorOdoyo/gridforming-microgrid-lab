@@ -88,3 +88,23 @@ def converter_step():
 
 
 CASES["converter-step"] = converter_step
+
+
+def converter_sag():
+    from dataclasses import replace
+
+    base = converter_step()
+    return replace(
+        base,
+        name="converter-sag",
+        description="DC sag saturates modulation before AC voltage recovers",
+        duration=0.35,
+        signals={
+            **base.signals,
+            "conductance": Signal((0,), (0.1,)),
+            "dc_voltage_v": Signal((0, 0.08, 0.15), (700, 450, 700)),
+        },
+    )
+
+
+CASES["converter-sag"] = converter_sag
