@@ -5,6 +5,7 @@ from scipy.integrate import solve_ivp
 from .dynamics import Dynamics
 from .simulation import Result, observe
 from .synchronization import SyncCheck
+from .validation import integration_options
 
 @dataclass(frozen=True)
 class Event:
@@ -16,13 +17,12 @@ class Event:
     def __post_init__(self):
         if not np.isfinite(self.time) or self.time < 0 or not np.isfinite(self.value):
             raise ValueError("event time and value must be finite; time must be nonnegative")
-        if self.target < 0:
+        if not isinstance(self.target, int) or self.target < 0:
             raise ValueError("event target must be nonnegative")
 
 def run_events(config, events=(), duration=10.0, sample_s=.02, initial=None,
                rtol=1e-7, atol=1e-9, max_step=.02, method="RK45"):
-    if not np.isfinite(duration) or duration <= 0 or not np.isfinite(sample_s) or sample_s <= 0:
-        raise ValueError("invalid simulation horizon")
+    integration_options(duration, sample_s, rtol, atol, max_step)
     events = sorted(events, key=lambda e: e.time)
     if any(e.time > duration for e in events):
         raise ValueError("events must fall inside the simulation")

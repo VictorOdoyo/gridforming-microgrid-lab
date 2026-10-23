@@ -22,7 +22,7 @@ class Inverter:
     current_limit_pu: float = float("inf")
 
     def __post_init__(self):
-        if not self.name or self.bus < 0 or self.mode not in ("droop", "vsm"):
+        if not isinstance(self.bus, int) or not self.name or self.bus < 0 or self.mode not in ("droop", "vsm"):
             raise ValueError("invalid inverter identity or mode")
         numeric = [self.impedance.real, self.impedance.imag, self.p_ref, self.q_ref,
                    self.v_ref, self.droop_hz, self.q_droop, self.inertia_s,
@@ -64,7 +64,7 @@ class Microgrid:
     secondary_limit_hz: float = 2.0
 
     def __post_init__(self):
-        if self.nbus < 1 or len(self.loads) != self.nbus or not self.inverters:
+        if not isinstance(self.nbus, int) or self.nbus < 1 or len(self.loads) != self.nbus or not self.inverters:
             raise ValueError("invalid bus, load, or source count")
         if any(x.bus >= self.nbus for x in self.inverters):
             raise ValueError("inverter bus out of range")
@@ -80,5 +80,6 @@ class Microgrid:
             raise ValueError("invalid startup duration")
         if self.sync_gain < 0 or not np.isfinite(self.sync_gain):
             raise ValueError("invalid synchronization gain")
-        if self.secondary_gain < 0 or self.secondary_limit_hz <= 0:
+        if (not np.all(np.isfinite([self.secondary_gain, self.secondary_limit_hz]))
+                or self.secondary_gain < 0 or self.secondary_limit_hz <= 0):
             raise ValueError("invalid secondary control")

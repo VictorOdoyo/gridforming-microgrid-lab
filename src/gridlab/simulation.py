@@ -3,6 +3,7 @@ from dataclasses import dataclass
 import numpy as np
 from scipy.integrate import solve_ivp
 from .dynamics import Dynamics
+from .validation import integration_options
 
 @dataclass(frozen=True)
 class Result:
@@ -28,8 +29,7 @@ def observe(model, time, states):
 
 def simulate(config, duration=10.0, sample_s=.02, initial=None, rtol=1e-7, atol=1e-9,
              method="RK45", max_step=.02):
-    if not np.isfinite(duration) or not np.isfinite(sample_s) or duration <= 0 or sample_s <= 0:
-        raise ValueError("duration and sample interval must be finite and positive")
+    integration_options(duration, sample_s, rtol, atol, max_step)
     model = Dynamics(config)
     x0 = model.initial() if initial is None else np.asarray(initial, float)
     if x0.shape != (5*model.n+1,) or not np.all(np.isfinite(x0)):
