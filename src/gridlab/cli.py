@@ -30,6 +30,12 @@ def parser():
     study.add_argument("--output", default="outputs/study.json")
     study.add_argument("--count", type=int, default=12, help="uncertainty trial count")
     study.add_argument("--seed", type=int, default=42)
+    export = sub.add_parser("export-case", help="export a built-in case for editing")
+    export.add_argument("--case", choices=sorted(CASES), default="load-step")
+    export.add_argument("--mode", choices=("droop", "vsm"), default="droop")
+    export.add_argument("--output", required=True)
+    inspect = sub.add_parser("inspect", help="summarize a saved NumPy trace")
+    inspect.add_argument("input")
     return p
 
 def main(argv=None):
@@ -39,6 +45,19 @@ def main(argv=None):
         if args.command == "list":
             for name, factory in sorted(CASES.items()):
                 print(f"{name}: {factory().description}")
+            return 0
+        if args.command == "export-case":
+            from pathlib import Path
+            from .config_io import save_case
+            path = Path(args.output)
+            path.parent.mkdir(parents=True, exist_ok=True)
+            save_case(CASES[args.case](args.mode), path)
+            print(str(path))
+            return 0
+        if args.command == "inspect":
+            from .storage import load_result
+            from .summary import summarize
+            print(json.dumps(summarize(load_result(args.input)), indent=2, allow_nan=False))
             return 0
         if args.command == "study":
             from pathlib import Path
