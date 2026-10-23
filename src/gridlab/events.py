@@ -26,22 +26,28 @@ def run_events(config, events=(), duration=10.0, sample_s=.02, initial=None,
     if any(e.time > duration for e in events):
         raise ValueError("events must fall inside the simulation")
     for e in events:
-        if (e.kind not in ("load_scale", "source_enabled", "p_ref", "line_enabled")
-                or e.target >= (config.nbus if e.kind == "load_scale" else len(config.lines) if e.kind == "line_enabled" else len(config.inverters))
+        if (e.kind not in ("load_scale", "source_enabled", "p_ref", "line_enabled", "grid_enabled")
+                or e.target >= (config.nbus if e.kind == "load_scale" else len(config.lines) if e.kind == "line_enabled" else 1 if e.kind == "grid_enabled" else len(config.inverters))
                 or (e.kind == "load_scale" and e.value < 0)
-                or (e.kind in ("source_enabled", "line_enabled") and e.value not in (0, 1))):
+                or (e.kind in ("source_enabled", "line_enabled", "grid_enabled") and e.value not in (0, 1))):
             raise ValueError("invalid event kind, target, or value")
     scales = np.ones(config.nbus)
     enabled = np.ones(len(config.inverters), bool)
     refs = [inv.p_ref for inv in config.inverters]
     line_on = [line.enabled for line in config.lines]
+    grid_on = config.grid is not None and config.grid.initially_connected
+    if any(e.kind == "grid_enabled" for e in events) and config.grid is None:
+        raise ValueError("grid events require a grid connection")
     def apply(time):
+        nonlocal grid_on
         for event in events:
             if event.time == time:
                 if event.kind == "load_scale":
                     scales[event.target] = event.value
                 elif event.kind == "source_enabled":
                     enabled[event.target] = bool(event.value)
+                elif event.kind == "grid_enabled":
+                    grid_on = bool(event.value)
                 elif event.kind == "line_enabled":
                     line_on[event.target] = bool(event.value)
                 elif event.kind == "p_ref":
@@ -49,7 +55,7 @@ def run_events(config, events=(), duration=10.0, sample_s=.02, initial=None,
         sources = tuple(replace(inv, p_ref=refs[k]) for k, inv in enumerate(config.inverters))
         return Dynamics(replace(config, loads=tuple(np.asarray(config.loads)*scales),
                                 inverters=sources, lines=tuple(replace(line, enabled=line_on[k])
-                                    for k, line in enumerate(config.lines))), enabled=enabled)
+                                    for k, line in enumerate(config.lines))), enabled=enabled, grid_connected=grid_on)
     cuts = np.unique([0.0, duration, *[e.time for e in events]])
     samples = np.unique(np.r_[np.arange(0, duration, sample_s), cuts])
     x = Dynamics(config).initial() if initial is None else np.asarray(initial, float)
