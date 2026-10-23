@@ -21,18 +21,33 @@ class DCTrace:
     termination: str = "completed"
 
 
-def simulate_dc(system=None, demand=None, duration=0.5, period_s=0.0001, initial=None, control=None):
+def simulate_dc(
+    system=None, demand=None, duration=0.5, period_s=0.0001, initial=None, control=None, events=()
+):
     system = system or DCSystem()
     control = control or DCControl()
     demand = demand or (lambda t: 50000.0)
     time = ticks(duration, period_s)
+    if any(e.time > duration for e in events):
+        raise ValueError("DC event outside simulation horizon")
+    time = np.unique(np.r_[time, [e.time for e in events]])
+    override = None
     x = system.initial() if initial is None else np.array(initial, float)
     states, duties, references, statuses, loads, saved_times = [], [], [], [], [], []
     termination = "completed"
     for k, t in enumerate(time):
         dt = time[k + 1] - t if k + 1 < len(time) else period_s
-        load = float(demand(t))
-        duty, closed = control.step(system, x, load, dt)
+        reset = False
+        for event in events:
+            if event.time == t:
+                if event.kind == "demand_w":
+                    override = event.value
+                elif event.kind == "trip":
+                    control.bms.closed, control.bms.reason = False, "external-trip"
+                elif event.kind == "reset":
+                    reset = True
+        load = float(demand(t) if override is None else override)
+        duty, closed = control.step(system, x, load, dt, reset=reset)
         saved_times.append(t)
         states.append(x.copy())
         duties.append(duty)
