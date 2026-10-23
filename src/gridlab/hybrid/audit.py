@@ -12,7 +12,12 @@ def audit_hybrid(plant, trace):
         loss_values, load_values = [], []
         for state in (trace.state[k], trace.state[k + 1]):
             obs = plant.observe(
-                state, trace.duty[k], trace.command[k], bool(trace.closed[k]), bool(trace.gate[k])
+                state,
+                trace.duty[k],
+                trace.command[k],
+                bool(trace.closed[k]),
+                bool(trace.gate[k]),
+                bool(trace.precharge[k]),
             )
             ac = state[5:9]
             copper = 1.5 * plant.ac.resistance_ohm * np.dot(ac[:2], ac[:2])

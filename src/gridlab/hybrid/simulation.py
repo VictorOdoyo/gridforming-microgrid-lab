@@ -23,6 +23,7 @@ class HybridTrace:
     conductance: np.ndarray
     reference: np.ndarray
     solar_w: np.ndarray
+    precharge: np.ndarray
 
 
 def simulate_hybrid(
@@ -83,14 +84,17 @@ def simulate_hybrid(
             ref *= np.exp(1j * x[9])
         gate = supervisor.step(plant.dc.bus.voltage(x[3]), x[4], dt, reset_gate)
         duty, command, closed = control.step(plant, x, ref, g, dt, gate=gate, reset=reset_battery, pv_w=pv)
-        rows.append((x.copy(), duty, command, closed, gate, g, ref, pv))
+        precharge = control.dc.precharging
+        rows.append((x.copy(), duty, command, closed, gate, g, ref, pv, precharge))
         if k + 1 < len(time):
             if g not in plant_rates:
                 matrix, _ = lc_state_space(plant.ac, g)
                 plant_rates[g] = float(max(abs(np.linalg.eigvals(matrix))))
             count = max(1, int(np.ceil(dt * plant_rates[g] / 0.5)))
             x = rk4_substeps(
-                lambda now, state: plant.derivative(now, state, duty, command, g, closed, gate, pv),
+                lambda now, state: plant.derivative(
+                    now, state, duty, command, g, closed, gate, pv, precharge
+                ),
                 t,
                 x,
                 dt,
@@ -98,5 +102,5 @@ def simulate_hybrid(
             )
             if x[3] <= 0:
                 raise RuntimeError("DC bus depleted; enable brownout protection or reduce load")
-    columns = [np.array([r[j] for r in rows]) for j in range(8)]
+    columns = [np.array([r[j] for r in rows]) for j in range(9)]
     return HybridTrace(time, *columns)

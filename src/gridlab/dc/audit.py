@@ -16,7 +16,8 @@ def audit_dc(system, trace):
     cooling = 0.0
     for k, dt in enumerate(np.diff(trace.time)):
         observations = [
-            system.observe(trace.state[j], trace.duty[k], bool(trace.closed[k])) for j in (k, k + 1)
+            system.observe(trace.state[j], trace.duty[k], bool(trace.closed[k]), bool(trace.precharge[k]))
+            for j in (k, k + 1)
         ]
         heat += dt * sum(p["heat_w"] for p in observations) / 2
         cooling += (

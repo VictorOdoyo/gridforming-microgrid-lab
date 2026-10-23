@@ -20,6 +20,7 @@ class DCSystem:
     thermal_resistance_k_w: float = 0.02
     thermal_capacity_j_k: float = 10000
     dump_resistance_ohm: float = 1.0
+    precharge_resistance_ohm: float = 2.0
 
     def __post_init__(self):
         if not np.all(
@@ -29,11 +30,20 @@ class DCSystem:
                     self.thermal_resistance_k_w,
                     self.thermal_capacity_j_k,
                     self.dump_resistance_ohm,
+                    self.precharge_resistance_ohm,
                 ]
             )
         ):
             raise ValueError("finite thermal parameters required")
-        if min(self.thermal_resistance_k_w, self.thermal_capacity_j_k, self.dump_resistance_ohm) <= 0:
+        if (
+            min(
+                self.thermal_resistance_k_w,
+                self.thermal_capacity_j_k,
+                self.dump_resistance_ohm,
+                self.precharge_resistance_ohm,
+            )
+            <= 0
+        ):
             raise ValueError("positive thermal and dump elements required")
 
     def initial(self, soc=0.5, voltage=None, current_a=0.0):
@@ -48,12 +58,19 @@ class DCSystem:
             ]
         )
 
-    def observe(self, state, duty, closed=True):
+    def observe(self, state, duty, closed=True, precharge=False):
         soc, vp, current, energy, temperature = state
         voltage = self.bus.voltage(energy)
         ocv = float(self.pack.ocv(soc))
         resistance = float(self.pack.resistance(temperature))
-        battery_i = current if closed else 0.0
+        if closed and precharge:
+            raise ValueError("main and precharge paths cannot close simultaneously")
+        precharge_i = (
+            max(0.0, (ocv - vp - voltage) / (resistance + self.precharge_resistance_ohm))
+            if precharge
+            else 0.0
+        )
+        battery_i = current if closed else precharge_i
         terminal = ocv - vp - resistance * battery_i
         chemical_w = ocv * battery_i
         rc_loss = vp**2 / self.polarization.resistance_ohm
@@ -64,13 +81,14 @@ class DCSystem:
             "battery_voltage_v": terminal,
             "chemical_w": chemical_w,
             "battery_current_a": battery_i,
-            "bus_input_w": duty * current * voltage if closed else 0.0,
-            "heat_w": rc_loss + ohmic + converter_loss,
+            "precharge_current_a": precharge_i,
+            "bus_input_w": duty * current * voltage if closed else precharge_i * voltage,
+            "heat_w": rc_loss + ohmic + converter_loss + self.precharge_resistance_ohm * precharge_i**2,
         }
 
-    def derivative(self, time, state, duty, demand_w, closed=True):
+    def derivative(self, time, state, duty, demand_w, closed=True, precharge=False):
         _soc, vp, current, _energy, temperature = state
-        p = self.observe(state, duty, closed)
+        p = self.observe(state, duty, closed, precharge)
         di = (
             self.converter.derivative(current, p["battery_voltage_v"], p["voltage_v"], duty)
             if closed

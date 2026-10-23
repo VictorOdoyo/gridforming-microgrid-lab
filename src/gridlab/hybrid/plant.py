@@ -28,7 +28,7 @@ class HybridPlant:
         physical = np.r_[self.dc.initial(soc), np.zeros(4)]
         return physical if self.outer is None else np.r_[physical, np.zeros(4)]
 
-    def observe(self, state, duty, command, closed=True, gate=True):
+    def observe(self, state, duty, command, closed=True, gate=True, precharge=False):
         dc_state, ac_state = state[:5], state[5:9]
         voltage_dc = self.dc.bus.voltage(dc_state[3])
         effective = complex(limit_vector(command, voltage_dc / np.sqrt(3))) if gate else 0j
@@ -40,18 +40,20 @@ class HybridPlant:
             else (0.0, 0.0)
         )
         return {
-            **self.dc.observe(dc_state, duty, closed),
+            **self.dc.observe(dc_state, duty, closed, precharge),
             "command": effective,
             "ac_input_w": ac_input,
             "inverter_dc_w": dc_input,
             "inverter_loss_w": loss,
         }
 
-    def derivative(self, time, state, duty, command, conductance, closed=True, gate=True, pv_w=0.0):
-        p = self.observe(state, duty, command, closed, gate)
+    def derivative(
+        self, time, state, duty, command, conductance, closed=True, gate=True, pv_w=0.0, precharge=False
+    ):
+        p = self.observe(state, duty, command, closed, gate, precharge)
         if not np.isfinite(pv_w) or pv_w < 0:
             raise ValueError("nonnegative finite solar power required")
-        dc_derivative = self.dc.derivative(time, state[:5], duty, p["inverter_dc_w"], closed)
+        dc_derivative = self.dc.derivative(time, state[:5], duty, p["inverter_dc_w"], closed, precharge)
         dc_derivative[3] += pv_w
         physical = np.r_[
             dc_derivative,

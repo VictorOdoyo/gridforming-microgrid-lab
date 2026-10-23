@@ -18,6 +18,7 @@ class DCTrace:
     reference_a: np.ndarray
     closed: np.ndarray
     demand_w: np.ndarray
+    precharge: np.ndarray
     termination: str = "completed"
 
 
@@ -44,6 +45,7 @@ def simulate_dc(
     if x.shape != (5,) or not np.isfinite(x).all():
         raise ValueError("invalid DC initial state")
     states, duties, references, statuses, loads, saved_times = [], [], [], [], [], []
+    precharge_states = []
     termination = "completed"
     for k, t in enumerate(time):
         dt = time[k + 1] - t if k + 1 < len(time) else period_s
@@ -58,18 +60,20 @@ def simulate_dc(
                     reset = True
         load = float(demand(t) if override is None else override)
         duty, closed = control.step(system, x, load, dt, reset=reset)
+        precharge = control.precharging
+        precharge_states.append(precharge)
         saved_times.append(t)
         states.append(x.copy())
         duties.append(duty)
         references.append(control.reference_a)
         statuses.append(closed)
         loads.append(load)
-        if system.bus.voltage(x[3]) < system.bus.minimum_v:
+        if system.bus.voltage(x[3]) < system.bus.minimum_v and not precharge:
             termination = "undervoltage"
             break
         if k + 1 < len(time):
             x = rk4_substeps(
-                lambda now, state: system.derivative(now, state, duty, load, closed),
+                lambda now, state: system.derivative(now, state, duty, load, closed, precharge),
                 t,
                 x,
                 dt,
@@ -84,5 +88,6 @@ def simulate_dc(
         np.array(references),
         np.array(statuses),
         np.array(loads),
+        np.array(precharge_states),
         termination,
     )

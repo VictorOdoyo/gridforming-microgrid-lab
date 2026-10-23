@@ -39,7 +39,7 @@ def save_trace(kind, trace, path, metadata=None):
     with path.open("wb") as stream:
         np.savez_compressed(
             stream,
-            schema_version=np.array(1),
+            schema_version=np.array(2),
             kind=np.array(kind),
             metadata_json=np.array(json.dumps(metadata or {}, allow_nan=False)),
             **arrays,
@@ -48,13 +48,20 @@ def save_trace(kind, trace, path, metadata=None):
 
 def load_trace(path):
     with np.load(path, allow_pickle=False) as archive:
-        if archive["schema_version"].item() != 1:
+        if archive["schema_version"].item() not in (1, 2):
             raise ValueError("unsupported laboratory trace schema")
         kind = str(archive["kind"])
         if kind not in _TYPES:
             raise ValueError("unknown archived laboratory kind")
         cls = _TYPES[kind]
-        values = {f.name: archive[f.name].copy() for f in fields(cls)}
+        values = {
+            f.name: (
+                np.zeros(len(archive["time"]), bool)
+                if f.name == "precharge" and f.name not in archive
+                else archive[f.name].copy()
+            )
+            for f in fields(cls)
+        }
         if "termination" in values:
             values["termination"] = str(values["termination"])
         trace = cls(**values)
