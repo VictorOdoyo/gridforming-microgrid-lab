@@ -1,7 +1,8 @@
 """Reduced phasor dynamics; state per source is angle, df, E, filtered P, filtered Q."""
 import numpy as np
 from .network import admittance
-from .norton import solve_network, NetworkPoint
+from .norton import NetworkPoint
+from .limited_network import solve_limited
 from .secondary import secondary_rate
 from .synchronization import phase_correction
 
@@ -15,6 +16,7 @@ class Dynamics:
         self.ybus = admittance(config.nbus, config.lines, np.conj(config.loads)*load_scale)
         self.buses = [i.bus for i in config.inverters]
         self.impedances = [i.impedance for i in config.inverters]
+        self.limits = [i.current_limit_pu for i in config.inverters]
 
     def initial(self, voltage=None):
         if voltage is None:
@@ -31,11 +33,11 @@ class Dynamics:
         emf = x[:, 2]*np.exp(1j*x[:, 0])
         if self.grid_connected and self.config.grid is not None:
             grid = self.config.grid
-            point = solve_network(self.ybus, [*self.buses, grid.bus],
+            point = solve_limited(self.ybus, [*self.buses, grid.bus],
                                   [*self.impedances, grid.impedance], np.r_[emf, grid.voltage],
-                                  np.r_[self.enabled, True])
+                                  [*self.limits, float("inf")], np.r_[self.enabled, True])
             return NetworkPoint(point.voltage, point.current[:self.n], point.power[:self.n], point.residual)
-        return solve_network(self.ybus, self.buses, self.impedances, emf, self.enabled)
+        return solve_limited(self.ybus, self.buses, self.impedances, emf, self.limits, self.enabled)
 
     def synchronization_bias(self, state):
         if self.config.grid is None or self.grid_connected or self.config.sync_gain == 0:

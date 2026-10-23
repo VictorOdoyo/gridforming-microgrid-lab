@@ -19,6 +19,7 @@ class Inverter:
     voltage_tau: float = .1
     mode: str = "droop"
     rating_pu: float = 1.0
+    current_limit_pu: float = float("inf")
 
     def __post_init__(self):
         if not self.name or self.bus < 0 or self.mode not in ("droop", "vsm"):
@@ -28,6 +29,8 @@ class Inverter:
                    self.power_tau, self.voltage_tau, self.rating_pu]
         if not np.all(np.isfinite(numeric)):
             raise ValueError("inverter values must be finite")
+        if self.current_limit_pu <= 0 or np.isnan(self.current_limit_pu):
+            raise ValueError("current limit must be positive")
         if abs(self.impedance) == 0 or self.impedance.real < 0:
             raise ValueError("invalid output impedance")
         if min(self.v_ref, self.droop_hz, self.inertia_s, self.power_tau,
