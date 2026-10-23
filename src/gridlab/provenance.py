@@ -8,6 +8,7 @@ import subprocess
 from datetime import UTC, datetime
 from pathlib import Path
 
+from . import __version__
 from .config_io import case_dict
 
 
@@ -20,6 +21,8 @@ def provenance(case):
     root = Path(__file__).resolve().parents[2]
 
     def git(*args):
+        if not (root / "pyproject.toml").is_file() or not (root / "src/gridlab/provenance.py").is_file():
+            return None
         try:
             return subprocess.check_output(
                 ["git", "-C", str(root), *args], text=True, stderr=subprocess.DEVNULL
@@ -34,6 +37,7 @@ def provenance(case):
     return {
         "created_utc": datetime.now(UTC).isoformat(),
         "python": platform.python_version(),
+        "package_version": __version__,
         "dependencies": versions,
         "configuration_sha256": configuration_hash(case),
         "git_commit": git("rev-parse", "HEAD"),
