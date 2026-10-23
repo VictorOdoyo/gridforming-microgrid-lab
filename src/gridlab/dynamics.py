@@ -68,7 +68,7 @@ class Dynamics:
             dx[k, 2] = (target-x[k, 2])/inv.voltage_tau
             dx[k, 3] = (point.power[k].real-x[k, 3])/inv.power_tau
             dx[k, 4] = (point.power[k].imag-x[k, 4])/inv.power_tau
-        active = df[self.enabled]
+        active = df[self.enabled]-self.synchronization_bias(state)
         ds = secondary_rate(active, state[-1], self.config.secondary_gain,
                             self.config.secondary_limit_hz) if len(active) else 0.0
         return np.r_[dx.ravel(), ds]

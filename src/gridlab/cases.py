@@ -43,3 +43,12 @@ def black_start(mode="droop"):
                 (Event(2, "load_scale", 4), Event(4, "load_scale", 8)), 12)
 
 CASES["black-start"] = black_start
+
+def island_recovery(mode="vsm"):
+    base = load_step(mode)
+    c = replace(base.config, grid=GridConnection(initially_connected=False),
+                secondary_gain=1.0, sync_gain=2.0)
+    return Case("island-recovery", "Islanded generator trip followed by checked utility reconnection",
+                c, (Event(2, "source_enabled", 0, 1), Event(16, "grid_enabled", 1)), 20)
+
+CASES["island-recovery"] = island_recovery
