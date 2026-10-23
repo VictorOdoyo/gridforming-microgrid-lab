@@ -1,5 +1,6 @@
 """Averaged half-bridge converter; duty connects battery inductor to DC link."""
 
+import math
 from dataclasses import dataclass
 
 
@@ -9,6 +10,8 @@ class Bidirectional:
     resistance_ohm: float = 0.05
 
     def __post_init__(self):
+        if not all(math.isfinite(v) for v in vars(self).values()):
+            raise ValueError("finite electrical elements required")
         if self.inductance_h <= 0 or self.resistance_ohm < 0:
             raise ValueError("invalid converter RL elements")
 

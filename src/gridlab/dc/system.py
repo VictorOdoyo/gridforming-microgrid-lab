@@ -22,6 +22,17 @@ class DCSystem:
     dump_resistance_ohm: float = 1.0
 
     def __post_init__(self):
+        if not np.all(
+            np.isfinite(
+                [
+                    self.ambient_c,
+                    self.thermal_resistance_k_w,
+                    self.thermal_capacity_j_k,
+                    self.dump_resistance_ohm,
+                ]
+            )
+        ):
+            raise ValueError("finite thermal parameters required")
         if min(self.thermal_resistance_k_w, self.thermal_capacity_j_k, self.dump_resistance_ohm) <= 0:
             raise ValueError("positive thermal and dump elements required")
 

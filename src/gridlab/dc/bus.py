@@ -11,6 +11,8 @@ class Bus:
     minimum_v: float = 450
 
     def __post_init__(self):
+        if not all(math.isfinite(v) for v in (self.capacitance_f, self.nominal_v, self.minimum_v)):
+            raise ValueError("finite DC bus parameters required")
         if self.capacitance_f <= 0 or not 0 < self.minimum_v < self.nominal_v:
             raise ValueError("invalid DC bus ratings")
 

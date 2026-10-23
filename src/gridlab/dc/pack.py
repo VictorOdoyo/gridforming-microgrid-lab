@@ -14,6 +14,10 @@ class Pack:
     resistance_temp_coefficient: float = -0.005
 
     def __post_init__(self):
+        if not np.all(np.isfinite([self.capacity_ah, self.resistance_ohm, self.resistance_temp_coefficient])):
+            raise ValueError("finite pack parameters required")
+        if min(self.ocv_volts) <= 0:
+            raise ValueError("positive open-circuit voltages required")
         if self.capacity_ah <= 0 or self.resistance_ohm <= 0:
             raise ValueError("positive capacity and resistance required")
         if len(self.soc_points) != len(self.ocv_volts) or len(self.soc_points) < 2:

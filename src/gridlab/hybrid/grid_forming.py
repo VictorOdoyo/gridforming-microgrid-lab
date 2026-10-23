@@ -16,6 +16,9 @@ class GridForming:
     secondary_gain: float = 0
 
     def __post_init__(self):
+        values = [v for k, v in vars(self).items() if k != "mode"]
+        if not np.all(np.isfinite(values)):
+            raise ValueError("finite grid-forming parameters required")
         if (
             self.mode not in ("droop", "vsm")
             or min(self.power_base_w, self.droop_hz, self.inertia_s, self.power_tau_s) <= 0

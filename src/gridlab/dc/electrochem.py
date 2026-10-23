@@ -1,5 +1,6 @@
 """One-RC pack state equations in SI; positive current discharges the pack."""
 
+import math
 from dataclasses import dataclass
 
 
@@ -9,6 +10,8 @@ class Polarization:
     capacitance_f: float = 1000
 
     def __post_init__(self):
+        if not all(math.isfinite(v) for v in vars(self).values()):
+            raise ValueError("finite electrical elements required")
         if min(self.resistance_ohm, self.capacitance_f) <= 0:
             raise ValueError("positive RC elements required")
 

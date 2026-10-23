@@ -13,6 +13,8 @@ class LCPlant:
     omega: float = 2 * np.pi * 50
 
     def __post_init__(self):
+        if not np.all(np.isfinite(list(vars(self).values()))) or self.omega < 0:
+            raise ValueError("finite physical parameters and nonnegative frame speed required")
         if min(self.inductance_h, self.capacitance_f) <= 0 or self.resistance_ohm < 0:
             raise ValueError("invalid passive LC elements")
 
