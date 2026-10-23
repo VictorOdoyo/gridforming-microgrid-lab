@@ -3,6 +3,7 @@ import numpy as np
 from .network import admittance
 from .norton import solve_network, NetworkPoint
 from .secondary import secondary_rate
+from .synchronization import phase_correction
 
 class Dynamics:
     def __init__(self, config, load_scale=1.0, enabled=None, grid_connected=None):
@@ -34,10 +35,16 @@ class Dynamics:
             return NetworkPoint(point.voltage, point.current[:self.n], point.power[:self.n], point.residual)
         return solve_network(self.ybus, self.buses, self.impedances, emf, self.enabled)
 
+    def synchronization_bias(self, state):
+        if self.config.grid is None or self.grid_connected or self.config.sync_gain == 0:
+            return 0.0
+        local = self.network(state).voltage[self.config.grid.bus]
+        return phase_correction(local, self.config.grid.voltage, self.config.sync_gain)
+
     def frequencies(self, state):
         x = state[:-1].reshape(self.n, 5)
         return np.array([x[k, 1] if inv.mode == "vsm"
-                         else inv.droop_hz*(inv.p_ref-x[k, 3])+state[-1]
+                         else inv.droop_hz*(inv.p_ref-x[k, 3])+state[-1]+self.synchronization_bias(state)
                          for k, inv in enumerate(self.config.inverters)])
 
     def __call__(self, time, state):
@@ -51,7 +58,7 @@ class Dynamics:
             dx[k, 0] = 2*np.pi*df[k]
             if inv.mode == "vsm":
                 dx[k, 1] = self.config.base.frequency_hz/(2*inv.inertia_s)*(
-                    inv.p_ref-x[k, 3]-(df[k]-state[-1])/inv.droop_hz)
+                    inv.p_ref-x[k, 3]-(df[k]-state[-1]-self.synchronization_bias(state))/inv.droop_hz)
             target = inv.v_ref-inv.q_droop*(x[k, 4]-inv.q_ref)
             dx[k, 2] = (target-x[k, 2])/inv.voltage_tau
             dx[k, 3] = (point.power[k].real-x[k, 3])/inv.power_tau

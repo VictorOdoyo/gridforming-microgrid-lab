@@ -55,6 +55,7 @@ class Microgrid:
     inverters: tuple[Inverter, ...]
     base: Base = field(default_factory=Base)
     grid: GridConnection | None = None
+    sync_gain: float = 0.0
     secondary_gain: float = 0.0
     secondary_limit_hz: float = 2.0
 
@@ -71,5 +72,7 @@ class Microgrid:
             raise ValueError("loads must be finite with nonnegative conductance")
         if self.grid is not None and self.grid.bus >= self.nbus:
             raise ValueError("grid bus out of range")
+        if self.sync_gain < 0 or not np.isfinite(self.sync_gain):
+            raise ValueError("invalid synchronization gain")
         if self.secondary_gain < 0 or self.secondary_limit_hz <= 0:
             raise ValueError("invalid secondary control")
