@@ -19,6 +19,9 @@ def parser():
     run.add_argument("--sample", type=float, default=.02, help="output sampling interval in seconds")
     run.add_argument("--max-step", type=float, default=.02, help="maximum integrator step in seconds")
     run.add_argument("--output", default="outputs/run")
+    stability = sub.add_parser("stability", help="linearize a built-in case at synchronous equilibrium")
+    stability.add_argument("--case", choices=sorted(CASES), default="load-step")
+    stability.add_argument("--mode", choices=("droop", "vsm"), default="droop")
     return p
 
 def main(argv=None):
@@ -28,6 +31,11 @@ def main(argv=None):
         if args.command == "list":
             for name, factory in sorted(CASES.items()):
                 print(f"{name}: {factory().description}")
+            return 0
+        if args.command == "stability":
+            from .stability import stability_report
+            case = CASES[args.case](args.mode)
+            print(json.dumps(stability_report(case.config), indent=2))
             return 0
         if args.command == "run":
             case = load_case(args.config) if args.config else CASES[args.case or "load-step"](args.mode or "droop")
