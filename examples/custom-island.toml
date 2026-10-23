@@ -1,0 +1,28 @@
+schema_version = 1
+name = "custom-island"
+description = "Two inverter sources with a demand increase"
+duration = 8
+
+[config]
+nbus = 1
+loads = [[0.8, 0.2]]
+secondary_gain = 1.0
+
+[[config.inverters]]
+name = "battery-a"
+bus = 0
+p_ref = 0.4
+mode = "vsm"
+impedance = [0.02, 0.15]
+
+[[config.inverters]]
+name = "battery-b"
+bus = 0
+p_ref = 0.4
+mode = "vsm"
+
+[[events]]
+time = 2
+kind = "load_scale"
+value = 1.5
+target = 0

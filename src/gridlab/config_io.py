@@ -1,6 +1,7 @@
 """Versioned JSON case interchange; complex numbers are [real, imag] pairs."""
 from dataclasses import asdict
 import json
+import tomllib
 from pathlib import Path
 from .cases import Case
 from .config import Inverter, Microgrid, GridConnection
@@ -52,4 +53,6 @@ def save_case(case, path):
     Path(path).write_text(json.dumps(case_dict(case), indent=2, allow_nan=False)+"\n", encoding="utf-8")
 
 def load_case(path):
-    return parse_case(json.loads(Path(path).read_text(encoding="utf-8")))
+    path = Path(path)
+    text = path.read_text(encoding="utf-8")
+    return parse_case(tomllib.loads(text) if path.suffix.lower() == ".toml" else json.loads(text))
