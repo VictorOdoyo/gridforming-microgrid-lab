@@ -25,6 +25,9 @@ def add_parser(sub):
     export.add_argument("--output", required=True)
     inspect = commands.add_parser("inspect", help="summarize a physical trace archive")
     inspect.add_argument("input")
+    study = commands.add_parser("study", help="run sampled-control and physical-model studies")
+    study.add_argument("kind", choices=("sample-delay", "dc-convergence", "observer", "active-damping"))
+    study.add_argument("--output", default="outputs/physical-study.json")
 
 
 def execute(args):
@@ -32,6 +35,30 @@ def execute(args):
         for name, factory in sorted(CASES.items()):
             case = factory()
             print(f"{name} [{case.kind}]: {case.description}")
+        return 0
+    if args.lab_command == "study":
+        from gridlab.converter.delay_study import delay_study
+        from gridlab.provenance import provenance
+
+        from .damping_study import damping_study
+        from .dc_convergence import dc_convergence
+        from .observer_study import observer_study
+
+        functions = {
+            "sample-delay": delay_study,
+            "dc-convergence": dc_convergence,
+            "observer": observer_study,
+            "active-damping": damping_study,
+        }
+        record = {
+            "study": args.kind,
+            "results": functions[args.kind](),
+            "provenance": provenance(CASES["hybrid-step"]()),
+        }
+        target = Path(args.output)
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(json.dumps(record, indent=2, allow_nan=False) + "\n", encoding="utf-8")
+        print(json.dumps({"study": args.kind, "output": str(target)}))
         return 0
     if args.lab_command == "export-case":
         path = Path(args.output)
