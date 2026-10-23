@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from gridlab.modulation import limit_vector
 from gridlab.numerics import merge_boundaries, rk4, ticks
 
 from .control import Cascade
@@ -49,6 +50,7 @@ def simulate_converter(
         if actuation_delay is not None:
             delayed = actuation_delay.step([command.real, command.imag])
             command = complex(*delayed)
+        command = complex(limit_vector(command, link / np.sqrt(3)))
         states.append(x.copy())
         commands.append(command)
         refs.append(ref)
