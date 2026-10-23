@@ -35,3 +35,11 @@ def generator_trip(mode="vsm"):
                 (Event(2, "source_enabled", 0, 1),), 12)
 
 CASES["generator-trip"] = generator_trip
+
+def black_start(mode="droop"):
+    base = load_step(mode)
+    c = replace(base.config, loads=(.1+.025j,), startup_s=1.5, secondary_gain=.5)
+    return Case("black-start", "Ramp voltage from zero then pick up staged loads", c,
+                (Event(2, "load_scale", 4), Event(4, "load_scale", 8)), 12)
+
+CASES["black-start"] = black_start
