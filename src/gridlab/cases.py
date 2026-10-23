@@ -20,3 +20,10 @@ def load_step(mode="droop"):
                 (Event(2, "load_scale", 1.5),), 8)
 
 CASES = {"load-step": load_step}
+
+def secondary_restoration(mode="droop"):
+    base = load_step(mode)
+    return Case("secondary-restoration", "Load step with integral frequency restoration",
+                replace(base.config, secondary_gain=1.0), base.events, 12)
+
+CASES["secondary-restoration"] = secondary_restoration
