@@ -35,12 +35,26 @@ class Inverter:
             raise ValueError("invalid controller gains or ratings")
 
 @dataclass(frozen=True)
+class GridConnection:
+    bus: int = 0
+    impedance: complex = .02+.1j
+    voltage: complex = 1+0j
+    initially_connected: bool = True
+
+    def __post_init__(self):
+        if self.bus < 0 or abs(self.impedance) == 0 or self.impedance.real < 0:
+            raise ValueError("invalid grid connection")
+        if not np.isfinite(self.voltage) or not np.isfinite(self.impedance) or abs(self.voltage) == 0:
+            raise ValueError("grid voltage and impedance must be finite and nonzero")
+
+@dataclass(frozen=True)
 class Microgrid:
     nbus: int
     lines: tuple[Line, ...]
     loads: tuple[complex, ...]
     inverters: tuple[Inverter, ...]
     base: Base = field(default_factory=Base)
+    grid: GridConnection | None = None
     secondary_gain: float = 0.0
     secondary_limit_hz: float = 2.0
 
@@ -55,5 +69,7 @@ class Microgrid:
             raise ValueError("line bus out of range")
         if not np.all(np.isfinite(self.loads)) or any(x.real < 0 for x in self.loads):
             raise ValueError("loads must be finite with nonnegative conductance")
+        if self.grid is not None and self.grid.bus >= self.nbus:
+            raise ValueError("grid bus out of range")
         if self.secondary_gain < 0 or self.secondary_limit_hz <= 0:
             raise ValueError("invalid secondary control")

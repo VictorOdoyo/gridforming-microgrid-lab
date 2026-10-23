@@ -1,13 +1,15 @@
 """Reduced phasor dynamics; state per source is angle, df, E, filtered P, filtered Q."""
 import numpy as np
 from .network import admittance
-from .norton import solve_network
+from .norton import solve_network, NetworkPoint
 from .secondary import secondary_rate
 
 class Dynamics:
-    def __init__(self, config, load_scale=1.0, enabled=None):
+    def __init__(self, config, load_scale=1.0, enabled=None, grid_connected=None):
         self.config = config
         self.n = len(config.inverters)
+        self.grid_connected = (config.grid is not None and config.grid.initially_connected
+                               if grid_connected is None else grid_connected)
         self.enabled = np.ones(self.n, bool) if enabled is None else np.array(enabled, bool)
         self.ybus = admittance(config.nbus, config.lines, np.conj(config.loads)*load_scale)
         self.buses = [i.bus for i in config.inverters]
@@ -24,6 +26,12 @@ class Dynamics:
     def network(self, state):
         x = state[:-1].reshape(self.n, 5)
         emf = x[:, 2]*np.exp(1j*x[:, 0])
+        if self.grid_connected and self.config.grid is not None:
+            grid = self.config.grid
+            point = solve_network(self.ybus, [*self.buses, grid.bus],
+                                  [*self.impedances, grid.impedance], np.r_[emf, grid.voltage],
+                                  np.r_[self.enabled, True])
+            return NetworkPoint(point.voltage, point.current[:self.n], point.power[:self.n], point.residual)
         return solve_network(self.ybus, self.buses, self.impedances, emf, self.enabled)
 
     def frequencies(self, state):
