@@ -16,8 +16,8 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: astral-sh/setup-uv@d0d8abe699bfb85fec6de9f7adb5ae17292296ff # v6
       - run: uv sync --locked --extra dev --python 3.13
-      - run: uv run ruff check src tests
-      - run: uv run ruff format --check src tests
+      - run: uv run ruff check src tests examples
+      - run: uv run ruff format --check src tests examples
 
   test:
     strategy:
@@ -45,3 +45,4 @@ jobs:
         run: |
           "$GITHUB_WORKSPACE/.wheel-smoke/bin/python" -m gridlab list
           "$GITHUB_WORKSPACE/.wheel-smoke/bin/python" -m gridlab run --duration 0.2 --output /tmp/gridlab-wheel-report
+          "$GITHUB_WORKSPACE/.wheel-smoke/bin/python" -m gridlab lab run --case hybrid-step --duration 0.002 --output /tmp/gridlab-physical-report
