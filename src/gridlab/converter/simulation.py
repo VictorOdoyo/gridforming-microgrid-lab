@@ -29,6 +29,8 @@ def simulate_converter(
     dc_voltage=None,
     initial=None,
     control=None,
+    measurement=None,
+    actuation_delay=None,
 ):
     plant = plant or LCPlant()
     control = control or Cascade.tuned(plant)
@@ -41,7 +43,11 @@ def simulate_converter(
     for k, t in enumerate(time):
         dt = time[k + 1] - t if k + 1 < len(time) else period_s
         ref, g, link = complex(reference(t)), float(conductance(t)), float(dc_voltage(t))
-        command = control.step(plant, x, ref, link, g, dt)
+        measured = x if measurement is None else np.asarray(measurement(x))
+        command = control.step(plant, measured, ref, link, g, dt)
+        if actuation_delay is not None:
+            delayed = actuation_delay.step([command.real, command.imag])
+            command = complex(*delayed)
         states.append(x.copy())
         commands.append(command)
         refs.append(ref)
