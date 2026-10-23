@@ -8,17 +8,21 @@ import numpy as np
 matplotlib.use("Agg")
 from matplotlib import pyplot as plt
 
+from .telemetry import dc_currents
+
 
 def plot_case(case, trace, path):
     panels = 3 if case.kind in ("dc", "converter") else 5
     fig, axes = plt.subplots(panels, 1, figsize=(11, 2.2 * panels), sharex=True, layout="constrained")
     t = trace.time
+    currents = dc_currents(case, trace) if case.kind != "converter" else {}
     if case.kind == "dc":
         axes[0].plot(t, np.sqrt(2 * trace.state[:, 3] / case.plant.bus.capacitance_f))
         axes[0].set_ylabel("DC link [V]")
         axes[1].plot(t, trace.state[:, 2], label="inductor current")
         axes[1].plot(t, trace.reference_a, label="current reference", ls="--")
-        axes[1].set_ylabel("Battery current [A]")
+        axes[1].plot(t, currents["battery_terminal_a"], label="battery terminal", ls=":")
+        axes[1].set_ylabel("Current [A]")
         axes[1].legend(fontsize=8)
         axes[2].plot(t, trace.state[:, 0])
         axes[2].set_ylabel("Battery SOC")
@@ -38,7 +42,7 @@ def plot_case(case, trace, path):
         axes[0].set_ylabel("DC link [V]")
         axes[1].plot(t, voltage * np.sqrt(1.5))
         axes[1].set_ylabel("AC line RMS [V]")
-        axes[2].plot(t, trace.state[:, 2])
+        axes[2].plot(t, currents["battery_terminal_a"], label="battery terminal")
         axes[2].set_ylabel("Battery current [A]")
         axes[3].plot(t, 1.5 * trace.conductance * voltage**2 / 1000, label="AC load")
         axes[3].plot(t, trace.solar_w / 1000, label="solar")

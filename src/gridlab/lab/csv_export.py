@@ -3,6 +3,8 @@
 import csv
 from pathlib import Path
 
+from .telemetry import dc_currents
+
 _DC = ("soc", "polarization_v", "battery_inductor_a", "dc_energy_j", "pack_temperature_c")
 _AC = ("inductor_d_peak_a", "inductor_q_peak_a", "bus_d_peak_v", "bus_q_peak_v")
 _OUTER = ("oscillator_angle_rad", "oscillator_deviation_hz", "filtered_power_pu", "secondary_bias_hz")
@@ -26,6 +28,8 @@ def columns(case, trace):
     ):
         if hasattr(trace, name):
             output[name] = getattr(trace, name)
+    if case.kind != "converter":
+        output.update(dc_currents(case, trace))
     for name in ("command", "reference"):
         if hasattr(trace, name):
             output[name + "_d_peak_v"] = getattr(trace, name).real
