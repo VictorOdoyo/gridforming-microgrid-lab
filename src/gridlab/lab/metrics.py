@@ -26,7 +26,7 @@ def summarize(case, trace):
             maximum_battery_a=float(
                 max(
                     abs(
-                        system.observe(s, trace.duty[k], bool(trace.closed[k]), bool(trace.precharge[k]))[
+                        system.observe(s[:5], trace.duty[k], bool(trace.closed[k]), bool(trace.precharge[k]))[
                             "battery_current_a"
                         ]
                     )
