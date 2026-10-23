@@ -67,3 +67,24 @@ def dc_hot_pack():
 
 
 CASES["dc-hot-pack"] = dc_hot_pack
+
+
+def converter_step():
+    from gridlab.converter.lc import LCPlant
+
+    return LabCase(
+        "converter-step",
+        "converter",
+        "Sampled LC voltage control under a load-conductance step",
+        LCPlant(),
+        0.25,
+        0.00005,
+        {
+            "reference_v": Signal((0, 0.02), (0, 325), "linear"),
+            "conductance": Signal((0, 0.08), (0.1, 0.2)),
+            "dc_voltage_v": Signal((0,), (700,)),
+        },
+    )
+
+
+CASES["converter-step"] = converter_step
