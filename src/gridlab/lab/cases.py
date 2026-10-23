@@ -203,3 +203,20 @@ def hybrid_low_soc():
 
 
 CASES["hybrid-low-soc"] = hybrid_low_soc
+
+
+def hybrid_secondary():
+    from dataclasses import replace
+
+    base = hybrid_step()
+    plant = replace(base.plant, outer=replace(base.plant.outer, secondary_gain=5))
+    return replace(
+        base,
+        name="hybrid-secondary",
+        description="Secondary frequency restoration in a battery-fed physical VSM",
+        plant=plant,
+        duration=0.8,
+    )
+
+
+CASES["hybrid-secondary"] = hybrid_secondary
