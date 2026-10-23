@@ -1,0 +1,115 @@
+{
+  "load-step-droop": {
+    "metrics": {
+      "nadir_hz": 49.850167843357184,
+      "zenith_hz": 50.022595014623725,
+      "max_abs_rocof_hz_s": 5.4991478828110685,
+      "final_max_error_hz": 0.14909465748141315,
+      "integrated_absolute_error_hz_s": 1.87269168139875,
+      "maximum_source_current_pu": 0.5929269370260961,
+      "maximum_network_residual": 3.580361673049448e-15,
+      "duration_s": 8.0,
+      "minimum_pu": 0.9566387836947755,
+      "maximum_pu": 0.9759498011815118,
+      "outside_band_bus_seconds": 0.0
+    },
+    "provenance": {
+      "created_utc": "2026-10-23T06:48:28.845326+00:00",
+      "python": "3.13.15",
+      "dependencies": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "matplotlib": "3.11.2"
+      },
+      "configuration_sha256": "7ab374ac4be6de8b09238b7e8cb7703c01072b50c5e3391e6638f2f3eeab2f9f",
+      "git_commit": "9412770ba2d693ba800c094448d7b0d689a8d624",
+      "git_dirty": true
+    },
+    "solver_options": {
+      "method": "RK45",
+      "rtol": 1e-07,
+      "atol": 1e-09,
+      "max_step_s": 0.02,
+      "sample_s": 0.02
+    }
+  },
+  "load-step-vsm": {
+    "metrics": {
+      "nadir_hz": 49.8509053179298,
+      "zenith_hz": 50.022595014592746,
+      "max_abs_rocof_hz_s": 1.3230107130379298,
+      "final_max_error_hz": 0.14909465748141315,
+      "integrated_absolute_error_hz_s": 1.8427932092618482,
+      "maximum_source_current_pu": 0.5929269370260959,
+      "maximum_network_residual": 3.580361673049448e-15,
+      "duration_s": 8.0,
+      "minimum_pu": 0.9566387836947756,
+      "maximum_pu": 0.9759498011815118,
+      "outside_band_bus_seconds": 0.0
+    },
+    "provenance": {
+      "created_utc": "2026-10-23T06:48:31.500189+00:00",
+      "python": "3.13.15",
+      "dependencies": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "matplotlib": "3.11.2"
+      },
+      "configuration_sha256": "3c34f17dc9bb6244155c6426b809ed982f5567917826e1309de12a59357cee55",
+      "git_commit": "9412770ba2d693ba800c094448d7b0d689a8d624",
+      "git_dirty": true
+    },
+    "solver_options": {
+      "method": "RK45",
+      "rtol": 1e-07,
+      "atol": 1e-09,
+      "max_step_s": 0.02,
+      "sample_s": 0.02
+    }
+  },
+  "island-recovery-vsm": {
+    "metrics": {
+      "nadir_hz": 49.76820187577366,
+      "zenith_hz": 50.051275807908794,
+      "max_abs_rocof_hz_s": 2.395199351747832,
+      "final_max_error_hz": 9.368520181851636e-09,
+      "integrated_absolute_error_hz_s": 0.21002360834377337,
+      "maximum_source_current_pu": 0.779856709776448,
+      "maximum_network_residual": 3.66205343881779e-15,
+      "duration_s": 20.0,
+      "minimum_pu": 0.9417701903726381,
+      "maximum_pu": 0.9793542941637905,
+      "outside_band_bus_seconds": 0.0
+    },
+    "provenance": {
+      "created_utc": "2026-10-23T06:48:39.918361+00:00",
+      "python": "3.13.15",
+      "dependencies": {
+        "numpy": "2.5.4",
+        "scipy": "1.18.1",
+        "matplotlib": "3.11.2"
+      },
+      "configuration_sha256": "d8f26917ebc115fa68e03395cd3093a434acc33194028b6739cb08d60fe40aab",
+      "git_commit": "9412770ba2d693ba800c094448d7b0d689a8d624",
+      "git_dirty": true
+    },
+    "solver_options": {
+      "method": "RK45",
+      "rtol": 1e-07,
+      "atol": 1e-09,
+      "max_step_s": 0.02,
+      "sample_s": 0.02
+    }
+  },
+  "daily-energy": {
+    "load_kwh": 816.7505832154641,
+    "solar_kwh": 440.3172037500531,
+    "diesel_kwh": 340.6860110443582,
+    "curtailed_kwh": 167.691396289077,
+    "unmet_kwh": 0.0,
+    "initial_soc": 0.5,
+    "final_soc": 0.1,
+    "minimum_soc": 0.1,
+    "maximum_soc": 0.9
+  }
+}
