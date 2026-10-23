@@ -22,6 +22,9 @@ def parser():
     stability = sub.add_parser("stability", help="linearize a built-in case at synchronous equilibrium")
     stability.add_argument("--case", choices=sorted(CASES), default="load-step")
     stability.add_argument("--mode", choices=("droop", "vsm"), default="droop")
+    compare = sub.add_parser("compare", help="compare droop and VSM under the same load step")
+    compare.add_argument("--duration", type=float, default=8)
+    compare.add_argument("--output", default="outputs/comparison")
     return p
 
 def main(argv=None):
@@ -31,6 +34,20 @@ def main(argv=None):
         if args.command == "list":
             for name, factory in sorted(CASES.items()):
                 print(f"{name}: {factory().description}")
+            return 0
+        if args.command == "compare":
+            from pathlib import Path
+            from .comparison import compare_controls
+            from .report import write_report
+            from .cases import load_step
+            results = compare_controls(args.duration)
+            summaries = {}
+            for mode, value in results.items():
+                base = load_step(mode)
+                case = replace(base, duration=args.duration,
+                               events=tuple(e for e in base.events if e.time <= args.duration))
+                summaries[mode] = write_report(case, value["trace"], Path(args.output)/mode)
+            print(json.dumps(summaries, indent=2))
             return 0
         if args.command == "stability":
             from .stability import stability_report
