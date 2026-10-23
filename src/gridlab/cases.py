@@ -27,3 +27,11 @@ def secondary_restoration(mode="droop"):
                 replace(base.config, secondary_gain=1.0), base.events, 12)
 
 CASES["secondary-restoration"] = secondary_restoration
+
+def generator_trip(mode="vsm"):
+    base = load_step(mode)
+    return Case("generator-trip", "Trip battery-b at 2 s and restore frequency",
+                replace(base.config, secondary_gain=.7),
+                (Event(2, "source_enabled", 0, 1),), 12)
+
+CASES["generator-trip"] = generator_trip
