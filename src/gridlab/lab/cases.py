@@ -108,3 +108,21 @@ def converter_sag():
 
 
 CASES["converter-sag"] = converter_sag
+
+
+def hybrid_step(mode="vsm"):
+    from gridlab.hybrid.grid_forming import GridForming
+    from gridlab.hybrid.plant import HybridPlant
+
+    return LabCase(
+        "hybrid-step",
+        "hybrid",
+        "Battery-fed grid-forming inverter responds to an AC load step",
+        HybridPlant(outer=GridForming(mode=mode)),
+        0.3,
+        0.0001,
+        {"reference_v": Signal((0, 0.02), (0, 325), "linear"), "conductance": Signal((0, 0.1), (0.1, 0.2))},
+    )
+
+
+CASES["hybrid-step"] = hybrid_step
