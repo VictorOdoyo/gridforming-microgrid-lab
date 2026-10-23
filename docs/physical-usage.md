@@ -53,8 +53,10 @@ laboratory uses conductance, reference_v, battery-trip, battery-reset and gate-r
 Converter experiments use signals instead of supervisor events.
 
 An initial_state is stored explicitly when supplied. State units and ordering are
-listed in physical-model.md. A zero-energy DC capacitor requires a precharge
-experiment; the active DC current controller cannot start from zero link voltage.
+listed in physical-model.md. An exactly zero-energy DC capacitor requires
+initialization with the analytical precharge component. Recovery from a positive
+low voltage uses the integrated resistor precharge path before the main contactor
+can close. Archives record precharge separately from main-contactor and AC-gate status.
 
 ## Studies
 

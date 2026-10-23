@@ -7,9 +7,11 @@ A Python engineering laboratory for inverter-dominated microgrids: **droop and
 virtual synchronous machine control, black start, load sharing, generator loss,
 frequency restoration, and checked utility reconnection**.
 
-The main model couples balanced RMS phasor networks to reduced outer-loop
-dynamics. Separate electrical-component and daily-energy experiments cover
-battery storage, PV availability, converter/filter behavior, and dispatch.
+Two simulation layers now support different engineering questions: balanced RMS
+phasor networks for multi-source microgrid dynamics, and a **coupled SI physical
+model** from battery chemical storage through DC/DC conversion, DC link, sampled
+AC controls and an LC-filtered inverter. Daily-energy dispatch remains a separate
+slow-timescale experiment.
 
 ![Island recovery after a generator trip](docs/results/island-recovery-vsm.png)
 
@@ -18,7 +20,52 @@ secondary control restores frequency, and coordinated phase alignment permits
 utility reconnection at 16 s. Disconnected-source oscillator states are excluded
 from frequency metrics and plots.
 
-## Run an experiment
+## Energy-coupled physical laboratory — 0.2
+
+![Physical battery and inverter recovery](docs/results/physical/hybrid-restart.png)
+
+The physical recovery sequence trips the battery, consumes DC capacitor hold-up,
+blocks AC gating, then precharges the link before restoring the main converter
+and AC service. SOC, polarization, losses, thermal response, DC voltage and
+modulation limits all participate in the same simulation.
+
+```sh
+python -m pip install -e ".[dev]"
+gridlab lab list
+gridlab lab run --case hybrid-restart --output outputs/physical-recovery
+gridlab lab run --case hybrid-cloud --output outputs/physical-solar
+gridlab lab run --case hybrid-low-soc --output outputs/physical-reserve
+gridlab lab run --case hybrid-secondary --output outputs/physical-frequency
+gridlab lab run --case hybrid-step --mode droop --output outputs/physical-droop
+```
+
+Twelve physical cases cover DC load steps and regeneration, contactor faults,
+thermal derating, AC inner-loop tracking, DC sag, solar transitions, battery loss,
+guarded restart, depleted SOC and secondary frequency restoration. Each saves the
+exact nested model, signals, initial state, fault schedule, SI telemetry and an
+independent chemical-to-load energy audit.
+
+The digital-control studies include ADC quantization, transport delay, vector
+anti-windup, voltage-only Kalman state estimation, LQR design, LCL active damping,
+passivity and exact sampled-loop pole analysis.
+
+![Sample-period and command-delay stability map](docs/results/physical/sample-delay.png)
+
+```sh
+gridlab lab study sample-delay --output outputs/physical-delay.json
+gridlab lab study dc-convergence --output outputs/physical-convergence.json
+gridlab lab study observer --output outputs/physical-observer.json
+gridlab lab study active-damping --output outputs/physical-damping.json
+gridlab lab run --config examples/physical-hybrid.json --output outputs/custom-physical
+python examples/reproduce_physical_gallery.py
+```
+
+[Physical equations](docs/physical-model.md) ·
+[Physical usage](docs/physical-usage.md) ·
+[Validation evidence](docs/physical-validation.md) ·
+[Recorded physical measurements](docs/results/physical/measurements.json)
+
+## Run a phasor-network experiment
 
 Requires Python 3.11 or newer.
 
@@ -121,10 +168,15 @@ python -m build
 CI tests Linux and Windows on Python 3.11 and 3.13, checks source quality, and
 executes an installed wheel outside the checkout.
 
-The AC solver is a balanced fundamental-frequency model with impedance loads and
-an optional algebraic current limiter. Independent component experiments are
-not integrated DC-side or inner-loop constraints. It does not calculate switching
-harmonics, unbalanced faults, or certified protection behavior.
+The phasor-network solver is a balanced fundamental-frequency model with impedance
+loads and an optional algebraic current limiter. Its DC supply remains idealized.
+The separate coupled physical layer integrates SOC, polarization, converter and DC
+link states with AC inner loops for one inverter feeding passive conductance.
+
+Average runs do not calculate switching harmonics or unbalanced faults. PWM and
+dead-time utilities are separate waveform experiments. Protection settings and
+component parameters are illustrative; hardware and independent EMT validation
+remain future work. See the documented [scope](docs/physical-model.md).
 
 ## Documentation
 
@@ -133,6 +185,11 @@ harmonics, unbalanced faults, or certified protection behavior.
 - [Validation evidence and interpretation](docs/validation.md)
 - [Architecture, limitations and extension paths](docs/architecture.md)
 - [Primary research and numerical references](docs/references.md)
+- [Physical battery/converter equations](docs/physical-model.md)
+- [Physical experiments and custom JSON cases](docs/physical-usage.md)
+- [Physical verification evidence](docs/physical-validation.md)
+- [Protection and precharge semantics](docs/protection.md)
+- [Release notes](CHANGELOG.md)
 - [Contribution guide](CONTRIBUTING.md)
 
 Released under the [MIT license](LICENSE).
