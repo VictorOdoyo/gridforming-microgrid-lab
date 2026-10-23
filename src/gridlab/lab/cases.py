@@ -162,3 +162,23 @@ def hybrid_restart():
 
 
 CASES["hybrid-restart"] = hybrid_restart
+
+
+def hybrid_cloud():
+    from dataclasses import replace
+
+    base = hybrid_step()
+    return replace(
+        base,
+        name="hybrid-cloud",
+        description="Solar surplus charges storage before a cloud removes DC injection",
+        duration=0.4,
+        signals={
+            **base.signals,
+            "conductance": Signal((0,), (0.1,)),
+            "solar_w": Signal((0, 0.06, 0.2), (0, 30000, 0)),
+        },
+    )
+
+
+CASES["hybrid-cloud"] = hybrid_cloud
