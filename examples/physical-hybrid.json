@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "name": "custom-solar-hybrid",
+  "kind": "hybrid",
+  "description": "Custom battery-fed VSM with solar injection and an AC load step",
+  "plant": {
+    "dc": {"pack": {"capacity_ah": 10}},
+    "outer": {"mode": "vsm", "reference_pu": 0.3}
+  },
+  "duration": 0.4,
+  "period_s": 0.0001,
+  "signals": {
+    "reference_v": {"times": [0, 0.02], "values": [0, 325], "interpolation": "linear"},
+    "conductance": {"times": [0, 0.1], "values": [0.1, 0.2]},
+    "solar_w": {"times": [0, 0.08, 0.2], "values": [0, 30000, 0]}
+  },
+  "events": []
+}

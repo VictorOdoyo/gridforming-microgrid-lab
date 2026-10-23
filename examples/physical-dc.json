@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "name": "custom-dc-reversal",
+  "kind": "dc",
+  "description": "Two amp-hour pack transitions from discharge to charging",
+  "plant": {"pack": {"capacity_ah": 2}},
+  "duration": 0.4,
+  "period_s": 0.0001,
+  "signals": {
+    "demand_w": {"times": [0, 0.1], "values": [30000, -30000]}
+  },
+  "events": []
+}
