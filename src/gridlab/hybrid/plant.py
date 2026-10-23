@@ -43,10 +43,14 @@ class HybridPlant:
             "inverter_loss_w": loss,
         }
 
-    def derivative(self, time, state, duty, command, conductance, closed=True, gate=True):
+    def derivative(self, time, state, duty, command, conductance, closed=True, gate=True, pv_w=0.0):
         p = self.observe(state, duty, command, closed, gate)
+        if not np.isfinite(pv_w) or pv_w < 0:
+            raise ValueError("nonnegative finite solar power required")
+        dc_derivative = self.dc.derivative(time, state[:5], duty, p["inverter_dc_w"], closed)
+        dc_derivative[3] += pv_w
         return np.r_[
-            self.dc.derivative(time, state[:5], duty, p["inverter_dc_w"], closed),
+            dc_derivative,
             self.ac.derivative(state[5:9], p["command"], conductance),
         ]
 

@@ -21,6 +21,7 @@ class HybridTrace:
     gate: np.ndarray
     conductance: np.ndarray
     reference: np.ndarray
+    solar_w: np.ndarray
 
 
 def simulate_hybrid(
@@ -33,11 +34,13 @@ def simulate_hybrid(
     control=None,
     events=(),
     supervisor=None,
+    solar=None,
 ):
     plant = plant or HybridPlant()
     control = control or HybridControl.tuned(plant)
     reference = reference or (lambda t: 325 * min(1, t / 0.02))
     conductance = conductance or (lambda t: 0.1 if t < 0.1 else 0.2)
+    solar = solar or (lambda t: 0.0)
     time = ticks(duration, period_s)
     if any(e.time > duration for e in events):
         raise ValueError("hybrid event outside horizon")
@@ -61,14 +64,17 @@ def simulate_hybrid(
                     reset_battery = True
                 elif event.kind == "gate-reset":
                     reset_gate = True
+        pv = float(solar(t))
         g = float(conductance(t) if load_override is None else load_override)
         ref = complex(reference(t) if ref_override is None else ref_override)
         gate = supervisor.step(plant.dc.bus.voltage(x[3]), x[4], dt, reset_gate)
-        duty, command, closed = control.step(plant, x, ref, g, dt, gate=gate, reset=reset_battery)
-        rows.append((x.copy(), duty, command, closed, gate, g, ref))
+        duty, command, closed = control.step(plant, x, ref, g, dt, gate=gate, reset=reset_battery, pv_w=pv)
+        rows.append((x.copy(), duty, command, closed, gate, g, ref, pv))
         if k + 1 < len(time):
-            x = rk4(lambda now, state: plant.derivative(now, state, duty, command, g, closed, gate), t, x, dt)
+            x = rk4(
+                lambda now, state: plant.derivative(now, state, duty, command, g, closed, gate, pv), t, x, dt
+            )
             if x[3] <= 0:
                 raise RuntimeError("DC bus depleted; enable brownout protection or reduce load")
-    columns = [np.array([r[j] for r in rows]) for j in range(7)]
+    columns = [np.array([r[j] for r in rows]) for j in range(8)]
     return HybridTrace(time, *columns)

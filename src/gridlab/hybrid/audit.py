@@ -24,9 +24,11 @@ def audit_hybrid(plant, trace):
         plant.dc.pack, trace.state[-1, 0]
     )
     delta = plant.stored_j(trace.state[-1]) - plant.stored_j(trace.state[0])
-    residual = chemical - heat - load - delta
+    solar = float(np.dot(np.diff(trace.time), trace.solar_w[:-1]))
+    residual = chemical + solar - heat - load - delta
     return {
         "chemical_draw_j": chemical,
+        "solar_input_j": solar,
         "served_load_j": load,
         "loss_j": heat,
         "stored_delta_j": delta,
