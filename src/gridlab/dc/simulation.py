@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from gridlab.numerics import merge_boundaries, rk4, ticks
+from gridlab.numerics import merge_boundaries, rk4_substeps, ticks
 
 from .control import DCControl
 from .system import DCSystem
@@ -30,6 +30,7 @@ def simulate_dc(
     control=None,
     events=(),
     boundaries=(),
+    integration_substeps=1,
 ):
     system = system or DCSystem()
     control = control or DCControl()
@@ -65,7 +66,13 @@ def simulate_dc(
             termination = "undervoltage"
             break
         if k + 1 < len(time):
-            x = rk4(lambda now, state: system.derivative(now, state, duty, load, closed), t, x, dt)
+            x = rk4_substeps(
+                lambda now, state: system.derivative(now, state, duty, load, closed),
+                t,
+                x,
+                dt,
+                integration_substeps,
+            )
             if x[3] < 0:
                 raise RuntimeError("DC energy crossed zero; reduce the integration period")
     return DCTrace(
