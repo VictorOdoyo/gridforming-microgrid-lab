@@ -55,6 +55,13 @@ def simulate(
     )
     if not solution.success:
         raise RuntimeError(solution.message)
-    return replace(observe(model, solution.t, solution.y.T),
-                   solver_options={"method": method, "rtol": rtol, "atol": atol,
-                                   "max_step_s": max_step, "sample_s": sample_s})
+    return replace(
+        observe(model, solution.t, solution.y.T),
+        solver_options={
+            "method": method,
+            "rtol": rtol,
+            "atol": atol,
+            "max_step_s": max_step,
+            "sample_s": sample_s,
+        },
+    )

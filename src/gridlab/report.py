@@ -14,7 +14,7 @@ from .summary import summarize
 
 
 def write_report(case, result, directory):
-    if abs(float(result.time[-1])-case.duration) > 1e-9:
+    if abs(float(result.time[-1]) - case.duration) > 1e-9:
         raise ValueError("report case duration does not match saved trajectory")
     output = Path(directory)
     output.mkdir(parents=True, exist_ok=True)
@@ -24,7 +24,10 @@ def write_report(case, result, directory):
     export_csv(result, output / "trace.csv")
     plot_result(result, output / "response.png", case.description, case.events)
     plot_result(result, output / "response.svg", case.description, case.events)
-    for name, value in (("metrics.json", metrics), ("provenance.json", {**provenance(case), "solver_options": result.solver_options})):
+    for name, value in (
+        ("metrics.json", metrics),
+        ("provenance.json", {**provenance(case), "solver_options": result.solver_options}),
+    ):
         (output / name).write_text(json.dumps(value, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     rows = "".join(f"<tr><th>{escape(k)}</th><td>{escape(str(v))}</td></tr>" for k, v in metrics.items())
     events = "".join(

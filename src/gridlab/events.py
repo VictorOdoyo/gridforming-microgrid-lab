@@ -140,6 +140,11 @@ def run_events(
         np.concatenate([r.current for r in chunks]),
         np.concatenate([r.network_residual for r in chunks]),
         np.concatenate([r.enabled for r in chunks]),
-        solver_options={"method": method, "rtol": rtol, "atol": atol,
-                        "max_step_s": max_step, "sample_s": sample_s},
+        solver_options={
+            "method": method,
+            "rtol": rtol,
+            "atol": atol,
+            "max_step_s": max_step,
+            "sample_s": sample_s,
+        },
     )
