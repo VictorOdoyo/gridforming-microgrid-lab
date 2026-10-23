@@ -1,12 +1,15 @@
 # Architecture and extension guide
 
-The package has three related but distinct modeling layers.
+The package has four related modeling layers.
 
 1. Balanced phasor dynamics: config, network, norton, limited_network, dynamics,
    simulation, events, cases.
-2. Independent electrical components and slow energy dispatch: battery, thevenin,
+2. Coupled physical models: dc/ holds battery, DC/DC and DC link dynamics;
+   converter/ holds SI dq plants and digital controls; hybrid/ connects their
+   instantaneous power flow. lab/ supplies portable cases, studies and reports.
+3. Independent electrical components and slow energy dispatch: battery, thevenin,
    solar, diesel, dclink, rlfilter, lcl, modulation, thermal, dispatch, daily_energy.
-3. Engineering analysis and reproducibility: operating_point, linearize, stability,
+4. Engineering analysis and reproducibility: operating_point, linearize, stability,
    modes, participation, sensitivity, uncertainty, convergence, summary, storage,
    config_io, provenance, plotting, report and CLI.
 
@@ -58,9 +61,16 @@ event time, time zero, simultaneous events, and an event at the final time.
 - Synchronization tests are illustrative engineering criteria.
 - The solver fails on singular unreferenced islands; inspect topology first.
 
+The physical layer has integrated battery SOC, polarization, DC link energy,
+converter losses, AC inner loops and selected protection behavior. These are
+not automatically added to the separate multi-bus phasor solver. See
+[physical-model.md](physical-model.md) for the coupled model's equations and
+[physical-validation.md](physical-validation.md) for its independent evidence.
+
 ## Further engineering work
 
-Natural extensions include integrated DC-side energy limits, detailed dq inner
-loops, unbalanced networks, explicit inverter saturation recovery, automatic
-load shedding, communication delay models, independent EMT cross-validation,
-and measured hardware parameter identification. Each needs its own validation.
+Further work includes multi-inverter physical networks, unbalanced EMT models,
+device-specific saturation recovery, detailed communication/protection networks,
+independent EMT cross-validation and measured hardware parameter identification.
+The physical LC and sampled-delay models provide starting points rather than
+evidence that these broader problems have already been solved.

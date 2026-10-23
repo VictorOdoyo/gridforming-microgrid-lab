@@ -60,3 +60,12 @@ No comparison to an independent EMT package or physical inverter has been made.
 Source ratings do not automatically impose thermal, SOC, or DC-power constraints
 on the phasor solver. Those component and energy experiments are separate.
 Changing numerical tolerances cannot resolve missing physical dynamics.
+
+
+## Coupled physical laboratory
+
+The 0.2 release adds independently audited battery-to-AC models. Its additional
+evidence is listed in [physical-validation.md](physical-validation.md).
+The phasor-solver limitations above still apply to phasor scenarios. They do not
+describe the additional SI physical model, whose own scope is documented in
+[physical-model.md](physical-model.md).
