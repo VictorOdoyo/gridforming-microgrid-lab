@@ -4,7 +4,8 @@ from dataclasses import dataclass
 
 import numpy as np
 
-from gridlab.numerics import rk4, ticks
+from gridlab.converter.state_space import lc_state_space
+from gridlab.numerics import rk4_substeps, ticks
 from gridlab.protection.gate import GateSupervisor
 
 from .control import HybridControl
@@ -35,6 +36,7 @@ def simulate_hybrid(
     events=(),
     supervisor=None,
     solar=None,
+    shedding=None,
 ):
     plant = plant or HybridPlant()
     control = control or HybridControl.tuned(plant)
@@ -49,6 +51,7 @@ def simulate_hybrid(
     load_override, ref_override = None, None
     x = plant.initial() if initial is None else np.array(initial, float)
     rows = []
+    plant_rates = {}
     for k, t in enumerate(time):
         dt = time[k + 1] - t if k + 1 < len(time) else period_s
         reset_battery, reset_gate = False, False
@@ -67,14 +70,28 @@ def simulate_hybrid(
         pv = float(solar(t))
         g = float(conductance(t) if load_override is None else load_override)
         ref = complex(reference(t) if ref_override is None else ref_override)
+        if shedding is not None:
+            nominal_peak = max(abs(ref), 1.0)
+            measured_pu = abs(complex(*x[7:9])) / nominal_peak
+            # Inhibit pickup during the commanded startup ramp.
+            if t >= 0.03:
+                g *= shedding.step(measured_pu, dt)
         if plant.outer is not None:
             ref *= np.exp(1j * x[9])
         gate = supervisor.step(plant.dc.bus.voltage(x[3]), x[4], dt, reset_gate)
         duty, command, closed = control.step(plant, x, ref, g, dt, gate=gate, reset=reset_battery, pv_w=pv)
         rows.append((x.copy(), duty, command, closed, gate, g, ref, pv))
         if k + 1 < len(time):
-            x = rk4(
-                lambda now, state: plant.derivative(now, state, duty, command, g, closed, gate, pv), t, x, dt
+            if g not in plant_rates:
+                matrix, _ = lc_state_space(plant.ac, g)
+                plant_rates[g] = float(max(abs(np.linalg.eigvals(matrix))))
+            count = max(1, int(np.ceil(dt * plant_rates[g] / 0.5)))
+            x = rk4_substeps(
+                lambda now, state: plant.derivative(now, state, duty, command, g, closed, gate, pv),
+                t,
+                x,
+                dt,
+                count,
             )
             if x[3] <= 0:
                 raise RuntimeError("DC bus depleted; enable brownout protection or reduce load")

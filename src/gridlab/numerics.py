@@ -18,3 +18,12 @@ def ticks(duration, period):
     if not np.isfinite(duration + period) or min(duration, period) <= 0:
         raise ValueError("positive finite horizon and period required")
     return np.unique(np.r_[np.arange(int(np.ceil(duration / period))) * period, duration])
+
+
+def rk4_substeps(function, time, state, step, count):
+    if not isinstance(count, int) or count < 1:
+        raise ValueError("positive integer substep count required")
+    x = np.array(state, float)
+    for k in range(count):
+        x = rk4(function, time + k * step / count, x, step / count)
+    return x
