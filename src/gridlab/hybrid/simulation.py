@@ -51,6 +51,8 @@ def simulate_hybrid(
     supervisor = supervisor or GateSupervisor()
     load_override, ref_override = None, None
     x = plant.initial() if initial is None else np.array(initial, float)
+    if x.shape != (len(plant.initial()),) or not np.isfinite(x).all():
+        raise ValueError("invalid physical initial state")
     rows = []
     plant_rates = {}
     for k, t in enumerate(time):

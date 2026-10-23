@@ -41,6 +41,8 @@ def simulate_dc(
     time = np.unique(np.r_[time, [e.time for e in events]])
     override = None
     x = system.initial() if initial is None else np.array(initial, float)
+    if x.shape != (5,) or not np.isfinite(x).all():
+        raise ValueError("invalid DC initial state")
     states, duties, references, statuses, loads, saved_times = [], [], [], [], [], []
     termination = "completed"
     for k, t in enumerate(time):

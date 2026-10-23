@@ -17,6 +17,8 @@ def rk4(function, time, state, step):
 def ticks(duration, period):
     if not np.isfinite(duration + period) or min(duration, period) <= 0:
         raise ValueError("positive finite horizon and period required")
+    if duration / period > 2_000_000:
+        raise ValueError("simulation exceeds two million control intervals")
     return np.unique(np.r_[np.arange(int(np.ceil(duration / period))) * period, duration])
 
 

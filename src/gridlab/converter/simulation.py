@@ -41,6 +41,8 @@ def simulate_converter(
     dc_voltage = dc_voltage or (lambda t: 700.0)
     time = merge_boundaries(ticks(duration, period_s), boundaries)
     x = np.zeros(4) if initial is None else np.array(initial, float)
+    if x.shape != (4,) or not np.isfinite(x).all():
+        raise ValueError("invalid AC initial state")
     states, commands, refs, loads, links = [], [], [], [], []
     for k, t in enumerate(time):
         dt = time[k + 1] - t if k + 1 < len(time) else period_s

@@ -38,7 +38,15 @@ class DCSystem:
 
     def initial(self, soc=0.5, voltage=None, current_a=0.0):
         self.pack.ocv(soc)
-        return np.array([soc, 0, current_a, self.bus.energy(voltage or self.bus.nominal_v), self.ambient_c])
+        return np.array(
+            [
+                soc,
+                0,
+                current_a,
+                self.bus.energy(self.bus.nominal_v if voltage is None else voltage),
+                self.ambient_c,
+            ]
+        )
 
     def observe(self, state, duty, closed=True):
         soc, vp, current, energy, temperature = state
