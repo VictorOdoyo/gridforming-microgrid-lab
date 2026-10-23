@@ -1,3 +1,4 @@
+from dataclasses import replace
 import hashlib
 import json
 
@@ -7,7 +8,7 @@ from gridlab.report import write_report
 
 
 def test_report_manifest_authenticates_every_delivered_file(tmp_path):
-    case = load_step()
+    case = replace(load_step(), duration=.2, events=())
     r = run_events(case.config, (), 0.2)
     metrics = write_report(case, r, tmp_path)
     manifest = json.loads((tmp_path / "manifest.json").read_text())

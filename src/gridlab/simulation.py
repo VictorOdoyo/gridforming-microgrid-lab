@@ -1,6 +1,6 @@
 """Adaptive integration with explicitly sampled output."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 from scipy.integrate import solve_ivp
@@ -21,6 +21,7 @@ class Result:
     current: np.ndarray
     network_residual: np.ndarray
     enabled: np.ndarray
+    solver_options: dict = field(default_factory=dict)
 
 
 def observe(model, time, states):
@@ -54,4 +55,6 @@ def simulate(
     )
     if not solution.success:
         raise RuntimeError(solution.message)
-    return observe(model, solution.t, solution.y.T)
+    return replace(observe(model, solution.t, solution.y.T),
+                   solver_options={"method": method, "rtol": rtol, "atol": atol,
+                                   "max_step_s": max_step, "sample_s": sample_s})
